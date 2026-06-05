@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
@@ -38,13 +38,14 @@ export async function POST(request: NextRequest) {
   const message = value.messages[0];
   const contact = value.contacts?.[0];
 
-  // Only handle text messages
-  if (message.type !== "text") {
-    return Response.json({ status: "non_text" });
+  // Only handle text and audio messages
+  if (!["text", "audio"].includes(message.type)) {
+    return Response.json({ status: "unsupported_type" });
   }
 
   const phone = message.from;
-  const text = message.text.body;
+  const isAudio = message.type === "audio";
+  const text = isAudio ? "[Voice Message]" : message.text.body;
   const name = contact?.profile?.name || null;
   const whatsappMsgId = message.id;
 
@@ -108,12 +109,23 @@ export async function POST(request: NextRequest) {
 
     const history = (rawHistory || []).reverse();
 
+    // Download audio if present
+    let audioData: { base64: string, mimeType: string } | undefined = undefined;
+    if (isAudio && message.audio?.id) {
+      try {
+        audioData = await downloadWhatsAppMedia(message.audio.id);
+      } catch (err) {
+        console.error("Failed to download audio:", err);
+      }
+    }
+
     // Get AI response
     const aiResponse = await getAIResponse(
       history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
-      }))
+      })),
+      audioData
     );
 
     let replyText = "";

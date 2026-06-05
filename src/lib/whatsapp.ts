@@ -17,3 +17,32 @@ export async function sendWhatsAppMessage(to: string, body: string) {
   );
   return res.json();
 }
+
+export async function downloadWhatsAppMedia(mediaId: string): Promise<{ base64: string, mimeType: string }> {
+  // 1. Get Media URL
+  const urlRes = await fetch(`https://graph.facebook.com/v22.0/${mediaId}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+    },
+  });
+  const urlData = await urlRes.json();
+  
+  if (!urlData.url) {
+    throw new Error(`Failed to get media URL: ${JSON.stringify(urlData)}`);
+  }
+
+  // 2. Download Media File
+  const mediaRes = await fetch(urlData.url, {
+    headers: {
+      Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+    },
+  });
+  
+  const arrayBuffer = await mediaRes.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  
+  return {
+    base64: buffer.toString('base64'),
+    mimeType: urlData.mime_type || "audio/ogg",
+  };
+}

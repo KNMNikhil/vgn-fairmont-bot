@@ -12,18 +12,37 @@ const openai = new OpenAI({
 });
 
 export async function getAIResponse(
-  messages: { role: "user" | "assistant"; content: string }[]
+  messages: { role: "user" | "assistant"; content: any }[],
+  audioData?: { base64: string }
 ) {
   try {
+    const formattedMessages: any[] = [
+      {
+        role: "system",
+        content: COMMUNITY_SYSTEM_PROMPT,
+      },
+      ...messages,
+    ];
+
+    if (audioData && formattedMessages.length > 0) {
+      const lastMessage = formattedMessages[formattedMessages.length - 1];
+      if (lastMessage.role === "user") {
+        lastMessage.content = [
+          { type: "text", text: lastMessage.content },
+          {
+            type: "input_audio",
+            input_audio: {
+              data: audioData.base64,
+              format: "wav" // OpenAI standard format tag, usually maps fine
+            }
+          }
+        ];
+      }
+    }
+
     const completion = await openai.chat.completions.create({
       model: isGemini ? "gemini-2.5-flash" : "anthropic/claude-sonnet-4-20250514",
-      messages: [
-        {
-          role: "system",
-          content: COMMUNITY_SYSTEM_PROMPT,
-        },
-        ...messages,
-      ],
+      messages: formattedMessages,
       temperature: 0.2,
       max_tokens: 1000,
       tools: [

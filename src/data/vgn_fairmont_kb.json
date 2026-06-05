@@ -6,14 +6,53 @@
     "total_units": "800",
     "blocks_info": "Totally 7 blocks: B1, B2, B3, B4, B5, B6 (3 and 4BHKs) and D Block (1 and 2 BHK flats, 200 flats total).",
     "total_residents": "500",
-    "established": "2020"
+    "established": "2020",
+    "piped_gas_roll_out": "VGN Fairmont will be a fully functional Piped gas only community. Option 1: Safe Custody mode (temporary surrender without disconnection). Option 2: Surrender the current connection."
   },
 
   "amenities": {
     "swimming_pool": {
       "location": "Building A, 2nd Floor",
       "timings": "6:00 AM - 8:00 PM",
-      "rules": "Bring ID card | Swimming attire required | Children below 5 need supervision"
+      "dos": [
+        "Shower before entering the pool to remove dirt, oils, and sweat.",
+        "Wear appropriate swimming attire (swimsuits, trunks, or swimming costumes).",
+        "Follow pool timings and rules set by the apartment management.",
+        "Supervise children at all times. Ensure they use age-appropriate areas of the pool.",
+        "Use swim diapers for infants and toddlers who are not toilet-trained.",
+        "Be aware of pool depth and swim within your abilities.",
+        "Use designated entry and exit points (ladders, steps) to enter and leave the pool.",
+        "Respect other swimmers and maintain a safe distance.",
+        "Report any injuries or emergencies to the lifeguard or pool staff immediately.",
+        "Use sunscreen to protect your skin from UV rays.",
+        "Stay hydrated, especially in hot weather.",
+        "Follow any specific instructions given by lifeguards or pool staff.",
+        "Use pool equipment (floats, noodles) responsibly and return them after use.",
+        "Dry off before entering the building to prevent slips and falls.",
+        "Inform management of any pool maintenance issues you notice."
+      ],
+      "donts": [
+        "Don't enter the pool if you have open wounds, skin infections, or contagious illnesses.",
+        "Don't run around the pool area to prevent slips and falls.",
+        "Don't dive in shallow areas or where diving is prohibited.",
+        "Don't push, dunk, or engage in rough play in the pool.",
+        "Don't use glass containers near the pool area to prevent injuries from broken glass.",
+        "Don't consume alcohol before or during swimming.",
+        "Don't eat food in the pool or immediate pool area.",
+        "Don't spit, urinate, or blow your nose in the pool.",
+        "Don't use the pool during thunderstorms or severe weather conditions.",
+        "Don't bring pets into the pool area unless specifically allowed.",
+        "Don't use electrical devices near the pool.",
+        "Don't swim alone, especially if you're not a strong swimmer.",
+        "Don't leave children unattended, even if they can swim.",
+        "Don't enter the pool area outside of designated hours.",
+        "Don't use inflatable toys or mattresses in crowded pools.",
+        "Don't wear street clothes in the pool.",
+        "Don't smoke in the pool area.",
+        "Don't enter the pool if you're under the influence of drugs.",
+        "Don't use the pool if you're experiencing diarrhea or have had it in the past two weeks.",
+        "Don't remove or tamper with safety equipment."
+      ]
     },
     "gym": {
       "location": "Community Center, Ground Floor",
@@ -100,6 +139,13 @@
     "guest_policy": {
       "guest_registration": "Register guests at security gate with ID proof",
       "staying_duration": "Guests can stay max 30 days"
+    },
+    "new_byelaw_amendments": {
+      "conflict_of_interest": "No person in the committee shall provide any paid service to the association/flats.",
+      "admin_rights": "President & Secretary shall be given admin rights of official WhatsApp group, CRM, Mygate, Mail. These must be passed to newly elected members upon change.",
+      "defaulters_clause": "The association reserves the right to deny its services to defaulters who fail to comply with paying raised amounts by the specific date.",
+      "social_media_allegations": "No open/implicit allegations against EC members without basis on WhatsApp/Social Media. Grievances must be in writing via official email/letter. Unfounded allegations will result in temporary block, notice, and potentially permanent removal pending unconditional apology.",
+      "pet_amendments": "Pets should not be unleashed or allowed to defecate/urinate in common areas. Government banned breeds prohibited. Owners must clean up after pets, register pets with association (vaccinations), and join official pet owners group."
     }
   },
 
@@ -154,6 +200,13 @@
       "police": "100",
       "ambulance": "102",
       "fire": "101"
+    },
+    "fm_team_escalation_matrix": {
+      "level_1_ticket": "Log your complaint through My gate App",
+      "level_2_helpdesk": "Mobile: 93841 69203 | Email: helpdesk@myfairmont.in",
+      "level_3_facility_executive": "Mobile: 93841 92068 | Email: fe@myfairmont.in",
+      "level_4_facility_manager": "Mobile: 9384 268704 | Email: fm@myfairmont.in",
+      "level_5_fms_head": "Email: fmshead@myfairmont.in"
     },
     "community_contacts": {
       "security_office": "+91-98765-43210",

@@ -116,14 +116,34 @@ export async function POST(request: NextRequest) {
       }))
     );
 
+    let replyText = "";
+
+    if (aiResponse.tool_call) {
+      const args = aiResponse.tool_call.args;
+      const targetPhone = args.shop_type === "fruits_shop" 
+        ? process.env.FRUITS_SHOP_NUMBER 
+        : process.env.IRON_SHOP_NUMBER;
+
+      if (targetPhone) {
+        const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;
+        await sendWhatsAppMessage(targetPhone, orderMessage);
+        
+        replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+      } else {
+        replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
+      }
+    } else {
+      replyText = aiResponse.text;
+    }
+
     // Send response via WhatsApp
-    await sendWhatsAppMessage(phone, aiResponse);
+    await sendWhatsAppMessage(phone, replyText);
 
     // Store AI response
     await supabase.from("messages").insert({
       conversation_id: conversation.id,
       role: "assistant",
-      content: aiResponse,
+      content: replyText,
     });
 
     // Update conversation timestamp again

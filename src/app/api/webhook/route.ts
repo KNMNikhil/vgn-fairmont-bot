@@ -126,9 +126,14 @@ export async function POST(request: NextRequest) {
 
       if (targetPhone) {
         const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;
-        await sendWhatsAppMessage(targetPhone, orderMessage);
+        const shopRes = await sendWhatsAppMessage(targetPhone, orderMessage);
         
-        replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+        if (shopRes.error) {
+          console.error("Shop Message Failed:", shopRes.error);
+          replyText = `⚠️ I tried to send your order, but the ${args.shop_type.replace("_", " ")} owner's WhatsApp window is closed. They need to message me first so I can forward your orders!`;
+        } else {
+          replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+        }
       } else {
         replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
       }

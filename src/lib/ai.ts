@@ -14,16 +14,21 @@ const openai = new OpenAI({
 export async function getAIResponse(
   messages: { role: "user" | "assistant"; content: string }[]
 ) {
-  const completion = await openai.chat.completions.create({
-    model: process.env.AI_MODEL || "anthropic/claude-sonnet-4-20250514",
-    messages: [
-      {
-        role: "system",
-        content: COMMUNITY_SYSTEM_PROMPT,
-      },
-      ...messages,
-    ],
-  });
+  try {
+    const completion = await openai.chat.completions.create({
+      model: process.env.AI_MODEL || "anthropic/claude-sonnet-4-20250514",
+      messages: [
+        {
+          role: "system",
+          content: COMMUNITY_SYSTEM_PROMPT,
+        },
+        ...messages,
+      ],
+    });
 
-  return completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    return completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
+  } catch (error) {
+    console.error("AI Generation Error:", error);
+    return "I am currently experiencing a very high volume of requests. Please wait a moment and try asking me again!";
+  }
 }

@@ -110,7 +110,9 @@
       "email": "president@vgnfairmont.com"
     },
     "joint_treasurer": {
-      "name": "K S Nagesh - B4 -2E",
+      "name": "K S Nagesh",
+      "block": "B4",
+      "flat_number": "2E",
       "contact": "+91-98765-43211",
       "email": "joint.treasurer@vgnfairmont.com"
     },
@@ -126,7 +128,9 @@
       "email": "secretary@vgnfairmont.com"
     },
     "other_members": {
-      "name": "GOPAL - B6-5D"
+      "name": "Gopal",
+      "block": "B6",
+      "flat_number": "5D"
     },
     "maintenance_head": {
       "name": "[Maintenance Head]",

@@ -1,0 +1,173 @@
+{
+  "community_info": {
+    "name": "VGN Fairmont",
+    "location": "Chennai, Tamil Nadu",
+    "address": "VGN Fairmont, [Your Full Address], Chennai - [Pincode]",
+    "total_units": "250",
+    "total_residents": "500",
+    "established": "2020"
+  },
+
+  "amenities": {
+    "swimming_pool": {
+      "location": "Building A, 2nd Floor",
+      "timings": "6:00 AM - 8:00 PM",
+      "rules": "Bring ID card | Swimming attire required | Children below 5 need supervision"
+    },
+    "gym": {
+      "location": "Community Center, Ground Floor",
+      "timings": "6:00 AM - 10:00 PM",
+      "contact": "+91-98765-43210",
+      "facilities": "Cardio equipment | Free weights | Yoga mats"
+    },
+    "community_hall": {
+      "location": "Building B, 1st Floor",
+      "capacity": "100 people",
+      "booking_process": "Contact Association President 48 hours in advance",
+      "usage": "Weddings | Parties | Meetings | Events"
+    },
+    "parking": {
+      "main_parking": "Basement Levels 1-3",
+      "guest_parking": "Ground Floor, marked spaces",
+      "rules": "One spot per unit | Guest parking limited to 2 hours | Visitor tag required"
+    },
+    "garden": {
+      "location": "Central courtyard",
+      "timings": "6:00 AM - 10:00 PM",
+      "features": "Green space | Seating areas | Walking paths"
+    }
+  },
+
+  "pet_care": {
+    "dog_feeding_time": {
+      "morning": "6:00 AM - 7:00 AM",
+      "evening": "5:00 PM - 6:00 PM"
+    },
+    "dog_feeding_location": {
+      "designated_zone": "Pet zone near West Gate",
+      "note": "Keep dogs leashed in common areas at all times"
+    },
+    "pet_guidelines": {
+      "general_rules": [
+        "All dogs must be leashed in common areas",
+        "Clean up after your pet immediately",
+        "Do not allow dogs to roam freely",
+        "Do not feed other residents' pets without permission",
+        "Ensure pets have current rabies vaccination"
+      ]
+    },
+    "veterinary_support": {
+      "nearby_vet_clinic": "Dr. Pet Clinic",
+      "address": "[Vet clinic address]",
+      "contact": "+91-98765-43210",
+      "hours": "9:00 AM - 8:00 PM"
+    },
+    "emergency_vet": {
+      "24_hour_clinic": "Emergency Pet Hospital",
+      "contact": "+91-98765-99999"
+    }
+  },
+
+  "rules_and_regulations": {
+    "quiet_hours": {
+      "time_period": "10:00 PM - 8:00 AM",
+      "restrictions": "No loud music | No construction noise | No parties | Keep TV at reasonable volume"
+    },
+    "parking_rules": {
+      "allocation": "One parking spot per unit",
+      "guest_parking": "Ground Floor - Limited to 2 hours | Visitor tag required",
+      "rules": [
+        "No parking in common corridors",
+        "No unauthorized vehicles",
+        "Vehicle registration must be on file"
+      ]
+    },
+    "maintenance_charges": {
+      "due_date": "1st of every month",
+      "payment_method": "[Bank account details]",
+      "late_charges": "1% per month after due date"
+    },
+    "common_area_booking": {
+      "booking_process": "Contact Association President 48 hours in advance",
+      "approval_time": "Decision within 24 hours"
+    },
+    "construction_and_renovations": {
+      "minor_repairs": "Notify Association with work timeline",
+      "major_work": "Need written approval from Association",
+      "working_hours": "9:00 AM - 5:00 PM on weekdays only"
+    },
+    "guest_policy": {
+      "guest_registration": "Register guests at security gate with ID proof",
+      "staying_duration": "Guests can stay max 30 days"
+    }
+  },
+
+  "association": {
+    "president": {
+      "name": "[President Name]",
+      "contact": "+91-98765-43210",
+      "email": "president@vgnfairmont.com"
+    },
+    "vice_president": {
+      "name": "[VP Name]",
+      "contact": "+91-98765-43211",
+      "email": "vp@vgnfairmont.com"
+    },
+    "treasurer": {
+      "name": "[Treasurer Name]",
+      "contact": "+91-98765-43212",
+      "email": "treasurer@vgnfairmont.com",
+      "handles": "Maintenance charges | Financial matters"
+    },
+    "secretary": {
+      "name": "[Secretary Name]",
+      "contact": "+91-98765-43213",
+      "email": "secretary@vgnfairmont.com"
+    },
+    "maintenance_head": {
+      "name": "[Maintenance Head]",
+      "contact": "+91-98765-43214",
+      "email": "maintenance@vgnfairmont.com"
+    },
+    "security_head": {
+      "name": "[Security Head]",
+      "contact": "+91-98765-43215",
+      "shift_timings": "24/7 (Three shifts)"
+    },
+    "meeting_schedule": {
+      "frequency": "Monthly",
+      "day_and_time": "2nd Sunday at 5:00 PM",
+      "location": "Community Hall"
+    }
+  },
+
+  "quick_contacts": {
+    "emergency": {
+      "police": "100",
+      "ambulance": "102",
+      "fire": "101"
+    },
+    "community_contacts": {
+      "security_office": "+91-98765-43210",
+      "maintenance_complaint": "+91-98765-43211",
+      "association_hotline": "+91-98765-43212",
+      "association_email": "contact@vgnfairmont.com"
+    },
+    "nearby_services": {
+      "nearest_hospital": "[Hospital Name & Contact]",
+      "nearest_school": "[School Name & Contact]",
+      "nearest_supermarket": "[Supermarket Name & Contact]"
+    }
+  },
+
+  "faq": {
+    "how_to_pay_maintenance": "Maintenance charges can be paid via bank transfer, online portal, or cheque made to VGN Fairmont Management.",
+    "late_payment_charges": "1% of maintenance amount per month after the due date (1st of month).",
+    "guest_registration_process": "Guests must report to security gate with ID proof. Gate will issue visitor pass.",
+    "how_to_book_community_hall": "Send request to Association President with event date, time, guests, and purpose. Decision within 24 hours.",
+    "can_i_keep_pets": "Yes, pets are allowed. Register with Association. Follow all pet guidelines and keep leashed in common areas.",
+    "can_i_work_from_home": "Yes, but ensure noise levels don't disturb others during quiet hours.",
+    "how_to_escalate_complaints": "Step 1: Contact Maintenance (3 days to resolve) | Step 2: Contact Secretary (7 days) | Step 3: Escalate to General Body Meeting",
+    "can_i_sublet_my_unit": "Yes, but inform the Association within 15 days of subletting. Subtenants must follow all community rules."
+  }
+}

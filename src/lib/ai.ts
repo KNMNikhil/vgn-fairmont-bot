@@ -29,7 +29,6 @@ export async function getAIResponse(
     return completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
   } catch (error) {
     console.error("AI Generation Error:", error);
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    return `[System Debug Error]: ${errorMsg}`;
+    return "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!";
   }
 }

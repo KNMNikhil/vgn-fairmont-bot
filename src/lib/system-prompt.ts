@@ -12,38 +12,7 @@ Your role is to provide accurate information about:
 
 KNOWLEDGE BASE:
 === VGN FAIRMONT COMMUNITY KNOWLEDGE BASE ===
-
-📍 COMMUNITY INFORMATION:
-Name: ${kb.community_info.name}
-Location: ${kb.community_info.location}
-Total Units: ${kb.community_info.total_units}
-Total Residents: ${kb.community_info.total_residents}
-
-🏊 AMENITIES:
-${JSON.stringify(kb.amenities, null, 2)}
-
-🐕 PET CARE:
-Dog Feeding Times: ${kb.pet_care.dog_feeding_time.morning} (Morning) & ${kb.pet_care.dog_feeding_time.evening} (Evening)
-Feeding Location: ${kb.pet_care.dog_feeding_location.designated_zone}
-Pet Rules: ${kb.pet_care.pet_guidelines.general_rules.join(", ")}
-
-⚖️ RULES & REGULATIONS:
-Quiet Hours: ${kb.rules_and_regulations.quiet_hours.time_period}
-Maintenance Due: ${kb.rules_and_regulations.maintenance_charges.due_date}
-
-👥 ASSOCIATION:
-President: ${kb.association.president.name} - ${kb.association.president.contact}
-Treasurer: ${kb.association.treasurer.name} - ${kb.association.treasurer.contact}
-Secretary: ${kb.association.secretary.name} - ${kb.association.secretary.contact}
-
-📞 EMERGENCY CONTACTS:
-Police: ${kb.quick_contacts.emergency.police}
-Ambulance: ${kb.quick_contacts.emergency.ambulance}
-Security Office: ${kb.quick_contacts.community_contacts.security_office}
-Maintenance: ${kb.quick_contacts.community_contacts.maintenance_complaint}
-
-❓ FAQs:
-${JSON.stringify(kb.faq, null, 2)}
+${JSON.stringify(kb, null, 2)}
 
 GUIDELINES:
 1. ABSOLUTE RULE FOR UNKNOWN QUESTIONS: If the answer to the user's question is NOT explicitly written in the knowledge base above, you MUST say exactly: "I am not aware of this." or "I don't know about it." 

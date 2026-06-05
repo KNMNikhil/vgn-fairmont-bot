@@ -99,16 +99,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch conversation history (last 20 messages for context)
-    const { data: history } = await supabase
+    const { data: rawHistory } = await supabase
       .from("messages")
       .select("role, content")
       .eq("conversation_id", conversation.id)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(20);
+
+    const history = (rawHistory || []).reverse();
 
     // Get AI response
     const aiResponse = await getAIResponse(
-      (history || []).map((m) => ({
+      history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       }))

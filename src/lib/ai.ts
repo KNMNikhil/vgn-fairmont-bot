@@ -62,7 +62,7 @@ export async function getAIResponse(
     // Check if the AI wants to call a tool
     if (message?.tool_calls && message.tool_calls.length > 0) {
       const toolCall = message.tool_calls[0];
-      if (toolCall.function.name === "route_shop_order") {
+      if (toolCall.type === "function" && toolCall.function.name === "route_shop_order") {
         const args = JSON.parse(toolCall.function.arguments);
         return {
           text: "", // The webhook will handle the rest based on tool_call
@@ -77,6 +77,6 @@ export async function getAIResponse(
     return { text: message?.content || "Sorry, I couldn't generate a response." };
   } catch (error) {
     console.error("AI Generation Error:", error);
-    return "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!";
+    return { text: "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!" };
   }
 }

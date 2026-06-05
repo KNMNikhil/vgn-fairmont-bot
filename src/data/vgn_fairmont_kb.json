@@ -1,9 +1,10 @@
 {
   "community_info": {
     "name": "VGN Fairmont",
-    "location": "Chennai, Tamil Nadu",
-    "address": "VGN Fairmont, [Your Full Address], Chennai - [Pincode]",
-    "total_units": "250",
+    "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu",
+    "address": "VGN Fairmont, Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
+    "total_units": "800",
+    "blocks_info": "Totally 7 blocks: B1, B2, B3, B4, B5, B6 (3 and 4BHKs) and D Block (1 and 2 BHK flats, 200 flats total).",
     "total_residents": "500",
     "established": "2020"
   },
@@ -27,7 +28,7 @@
       "usage": "Weddings | Parties | Meetings | Events"
     },
     "parking": {
-      "main_parking": "Basement Levels 1-3",
+      "main_parking": "Basement 1 and Basement 2 parking",
       "guest_parking": "Ground Floor, marked spaces",
       "rules": "One spot per unit | Guest parking limited to 2 hours | Visitor tag required"
     },
@@ -41,10 +42,10 @@
   "pet_care": {
     "dog_feeding_time": {
       "morning": "6:00 AM - 7:00 AM",
-      "evening": "5:00 PM - 6:00 PM"
+      "evening": "After 9:00 PM"
     },
     "dog_feeding_location": {
-      "designated_zone": "Pet zone near West Gate",
+      "designated_zone": "Behind the D Block",
       "note": "Keep dogs leashed in common areas at all times"
     },
     "pet_guidelines": {
@@ -104,14 +105,14 @@
 
   "association": {
     "president": {
-      "name": "[President Name]",
+      "name": "Praveen Kumar",
       "contact": "+91-98765-43210",
       "email": "president@vgnfairmont.com"
     },
-    "vice_president": {
-      "name": "[VP Name]",
+    "joint_treasurer": {
+      "name": "K S Nagesh - B4 -2E",
       "contact": "+91-98765-43211",
-      "email": "vp@vgnfairmont.com"
+      "email": "joint.treasurer@vgnfairmont.com"
     },
     "treasurer": {
       "name": "[Treasurer Name]",
@@ -123,6 +124,9 @@
       "name": "[Secretary Name]",
       "contact": "+91-98765-43213",
       "email": "secretary@vgnfairmont.com"
+    },
+    "other_members": {
+      "name": "GOPAL - B6-5D"
     },
     "maintenance_head": {
       "name": "[Maintenance Head]",

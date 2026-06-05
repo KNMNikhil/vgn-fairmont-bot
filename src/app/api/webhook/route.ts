@@ -121,8 +121,8 @@ export async function POST(request: NextRequest) {
     if (aiResponse.tool_call) {
       const args = aiResponse.tool_call.args;
       const targetPhone = args.shop_type === "fruits_shop" 
-        ? process.env.FRUITS_SHOP_NUMBER 
-        : process.env.IRON_SHOP_NUMBER;
+        ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
+        : (process.env.IRON_SHOP_NUMBER || "919677197402");
 
       if (targetPhone) {
         const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;

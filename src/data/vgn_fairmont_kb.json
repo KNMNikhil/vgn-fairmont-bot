@@ -221,6 +221,72 @@
     }
   },
 
+  "community_events": {
+    "upcoming_events": [
+      {
+        "title": "Republic Day Celebration",
+        "date": "2026-01-26",
+        "time": "8:00 AM",
+        "location": "Community Hall",
+        "description": "Flag hoisting ceremony followed by cultural program",
+        "organizer": "Association Committee"
+      },
+      {
+        "title": "Holi Celebration",
+        "date": "2026-03-14",
+        "time": "10:00 AM - 2:00 PM",
+        "location": "Garden Area",
+        "description": "Community Holi celebration with organic colors",
+        "organizer": "Cultural Committee"
+      },
+      {
+        "title": "Independence Day",
+        "date": "2026-08-15",
+        "time": "8:00 AM",
+        "location": "Community Hall",
+        "description": "Flag hoisting and patriotic program",
+        "organizer": "Association Committee"
+      },
+      {
+        "title": "Diwali Celebration",
+        "date": "2026-10-24",
+        "time": "6:00 PM",
+        "location": "Garden Area",
+        "description": "Community Diwali celebration with diyas and rangoli competition",
+        "organizer": "Cultural Committee"
+      },
+      {
+        "title": "New Year Party",
+        "date": "2026-12-31",
+        "time": "8:00 PM - 12:00 AM",
+        "location": "Community Hall",
+        "description": "New Year's Eve party with music, dance, and refreshments",
+        "organizer": "Social Committee"
+      }
+    ],
+    "recurring_events": {
+      "yoga_classes": {
+        "schedule": "Monday, Wednesday, Friday",
+        "time": "6:30 AM - 7:30 AM",
+        "location": "Garden Area",
+        "contact": "Yoga Instructor: +91-98765-00001"
+      },
+      "zumba_classes": {
+        "schedule": "Tuesday, Thursday, Saturday",
+        "time": "6:00 PM - 7:00 PM",
+        "location": "Community Hall",
+        "contact": "Zumba Instructor: +91-98765-00002"
+      },
+      "monthly_gm_meeting": {
+        "schedule": "2nd Sunday of every month",
+        "time": "5:00 PM",
+        "location": "Community Hall",
+        "note": "All residents are encouraged to attend"
+      }
+    },
+    "how_to_add_event": "Contact Association Secretary with event details (title, date, time, location, description) at least 2 weeks in advance for approval."
+  },
+
   "faq": {
     "how_to_pay_maintenance": "Maintenance charges can be paid via bank transfer, online portal, or cheque made to VGN Fairmont Management.",
     "late_payment_charges": "1% of maintenance amount per month after the due date (1st of month).",

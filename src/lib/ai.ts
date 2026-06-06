@@ -199,6 +199,48 @@ export async function getAIResponse(
         {
           type: "function",
           function: {
+            name: "get_upcoming_events",
+            description: "Get upcoming community events. Use when user asks about events, celebrations, activities, or what's happening in the community.",
+            parameters: {
+              type: "object",
+              properties: {
+                days_ahead: {
+                  type: "number",
+                  description: "Number of days ahead to show events (default 30)"
+                }
+              }
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "rsvp_to_event",
+            description: "RSVP to a community event. Use when user wants to attend, register, or confirm attendance for an event.",
+            parameters: {
+              type: "object",
+              properties: {
+                event_id: {
+                  type: "string",
+                  description: "The event ID or partial ID"
+                },
+                status: {
+                  type: "string",
+                  enum: ["going", "maybe", "not_going"],
+                  description: "RSVP status"
+                },
+                guests_count: {
+                  type: "number",
+                  description: "Number of guests (including self)"
+                }
+              },
+              required: ["event_id", "status"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "submit_poll_vote",
             description: "Submit a resident's vote for a specific poll.",
             parameters: {

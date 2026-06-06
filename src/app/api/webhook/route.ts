@@ -244,6 +244,53 @@ export async function POST(request: NextRequest) {
         } else {
           replyText = "*📊 Active Polls*\n\n" + data.map((p: { id: string, question: string, options: string[] }) => `*Poll ID:* ${p.id.split('-')[0]}\n*Q:* ${p.question}\n*Options:*\n` + p.options.map((opt: string, i: number) => `${i+1}. ${opt}`).join("\n")).join("\n\n") + "\n\nReply with 'Vote [Poll ID] for [Option Number]' to cast your vote!";
         }
+      } else if (toolName === "get_upcoming_events") {
+        const daysAhead = args.days_ahead || 30;
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + daysAhead);
+        
+        const { data, error } = await supabase.from("community_events")
+          .select("*")
+          .eq("status", "scheduled")
+          .gte("event_date", new Date().toISOString().split('T')[0])
+          .lte("event_date", futureDate.toISOString().split('T')[0])
+          .order("event_date", { ascending: true });
+          
+        if (error || !data || data.length === 0) {
+          replyText = "There are no upcoming events in the next " + daysAhead + " days.";
+        } else {
+          replyText = `*📅 Upcoming Community Events*\n\n` + data.map((e: { id: string, title: string, event_date: string, event_time: string, location: string, description: string }) => {
+            const eventDate = new Date(e.event_date + 'T' + e.event_time);
+            const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const formattedTime = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            return `*${e.title}*\n📅 ${formattedDate} at ${formattedTime}\n📍 ${e.location}\n${e.description || ''}\n_Event ID: ${e.id.split('-')[0]}_`;
+          }).join("\n\n") + "\n\nReply with 'RSVP [Event ID]' to register!";
+        }
+      } else if (toolName === "rsvp_to_event") {
+        const { data: event, error: eventError } = await supabase.from("community_events")
+          .select("*")
+          .ilike("id", `${args.event_id}%`)
+          .single();
+          
+        if (eventError || !event) {
+          replyText = `I couldn't find an event with ID "${args.event_id}".`;
+        } else {
+          const { error: rsvpError } = await supabase.from("event_rsvps").upsert({
+            event_id: event.id,
+            phone,
+            name,
+            status: args.status,
+            guests_count: args.guests_count || 1
+          }, { onConflict: 'event_id,phone' });
+          
+          if (rsvpError) {
+            console.error("RSVP error:", rsvpError);
+            replyText = "Sorry, I couldn't register your RSVP. Please try again.";
+          } else {
+            const statusMsg = args.status === "going" ? "You're registered!" : args.status === "maybe" ? "Marked as Maybe" : "Noted you won't attend";
+            replyText = `✅ ${statusMsg}\n\n*Event:* ${event.title}\n📅 ${new Date(event.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\n${args.guests_count && args.guests_count > 1 ? `👥 Guests: ${args.guests_count}\n` : ''}\nSee you there! 🎉`;
+          }
+        }
       } else if (toolName === "submit_poll_vote") {
         // Find the poll
         const { data: poll, error: pollError } = await supabase.from("polls").select("*").ilike("id", `${args.poll_id}%`).single();

@@ -164,20 +164,32 @@ export async function getAIResponse(
     });
 
     const message = completion.choices[0]?.message;
+    console.log("Raw AI Message:", JSON.stringify(message, null, 2));
 
     // Check if the AI wants to call a tool
+    let toolCallName = "";
+    let toolCallArgs = "{}";
+
     if (message?.tool_calls && message.tool_calls.length > 0) {
       const toolCall = message.tool_calls[0];
       if (toolCall.type === "function") {
-        const args = toolCall.function.arguments ? JSON.parse(toolCall.function.arguments) : {};
-        return {
-          text: "", // The webhook will handle the rest based on tool_call
-          tool_call: {
-            name: toolCall.function.name,
-            args: args
-          }
-        };
+        toolCallName = toolCall.function.name;
+        toolCallArgs = toolCall.function.arguments || "{}";
       }
+    } else if (message?.function_call) {
+      toolCallName = message.function_call.name;
+      toolCallArgs = message.function_call.arguments || "{}";
+    }
+
+    if (toolCallName) {
+      const args = JSON.parse(toolCallArgs);
+      return {
+        text: "", // The webhook will handle the rest based on tool_call
+        tool_call: {
+          name: toolCallName,
+          args: args
+        }
+      };
     }
 
     return { text: message?.content || "Sorry, I couldn't generate a response." };

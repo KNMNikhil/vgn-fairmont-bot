@@ -90,21 +90,37 @@
   "shops_and_services": {
     "iron_shop_1": {
       "location": "Below B4 block, backside, ground floor",
-      "description": "Iron and laundry services"
+      "description": "Iron and laundry services",
+      "contact": "+91-98765-11111"
     },
     "iron_shop_2": {
       "location": "Near the play area and fruits shop, ground floor",
-      "description": "Second iron and laundry services shop"
+      "description": "Second iron and laundry services shop",
+      "contact": "+91-98765-22222"
     },
     "fruits_shop": {
       "location": "Below and backside of B5 block, near the play area, ground floor",
       "description": "Fresh fruits and vegetables",
-      "nearby": "Close to physiotherapy clinic and second iron shop"
+      "nearby": "Close to physiotherapy clinic and second iron shop",
+      "contact": "+91-98765-33333"
     },
     "physiotherapy_clinic": {
       "location": "Below and backside of B5 block, near the fruits shop, ground floor",
       "description": "Physiotherapy and rehabilitation services",
-      "nearby": "Next to fruits shop"
+      "nearby": "Next to fruits shop",
+      "contact": "+91-98765-44444"
+    },
+    "milk_delivery": {
+      "description": "Daily milk delivery service",
+      "contact": "+91-98765-55555",
+      "delivery_time": "6:00 AM - 7:00 AM",
+      "note": "Contact for subscription and delivery details"
+    },
+    "newspaper_delivery": {
+      "description": "Daily newspaper delivery service",
+      "contact": "+91-98765-66666",
+      "delivery_time": "5:30 AM - 6:30 AM",
+      "note": "Contact for subscription and delivery details"
     }
   },
 

@@ -135,18 +135,19 @@ export async function POST(request: NextRequest) {
       const args = aiResponse.tool_call.args;
 
       if (toolName === "get_current_datetime") {
-        // Get current IST date and time
+        // Get current IST date and time - CORRECTED
         const now = new Date();
-        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
         
-        const dateStr = istTime.toLocaleDateString('en-US', { 
+        const dateStr = now.toLocaleDateString('en-US', { 
+          timeZone: 'Asia/Kolkata',
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
           day: 'numeric' 
         });
         
-        const timeStr = istTime.toLocaleTimeString('en-US', { 
+        const timeStr = now.toLocaleTimeString('en-US', { 
+          timeZone: 'Asia/Kolkata',
           hour: '2-digit', 
           minute: '2-digit', 
           second: '2-digit',
@@ -159,13 +160,16 @@ export async function POST(request: NextRequest) {
           ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
           : (process.env.IRON_SHOP_NUMBER || "919677197402");
 
-        // Get current IST date and time for order
+        // Get current IST date and time for order - CORRECTED
         const now = new Date();
-        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-        const orderDateTime = istTime.toLocaleString('en-US', { 
-          dateStyle: 'medium',
-          timeStyle: 'short',
-          timeZone: 'Asia/Kolkata'
+        const orderDateTime = now.toLocaleString('en-US', { 
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
         });
 
         if (targetPhone) {
@@ -182,13 +186,16 @@ export async function POST(request: NextRequest) {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
         }
       } else if (toolName === "create_ticket") {
-        // Get current IST date and time for ticket
+        // Get current IST date and time for ticket - CORRECTED
         const now = new Date();
-        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-        const ticketDateTime = istTime.toLocaleString('en-US', { 
-          dateStyle: 'medium',
-          timeStyle: 'short',
-          timeZone: 'Asia/Kolkata'
+        const ticketDateTime = now.toLocaleString('en-US', { 
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
         });
 
         const { data, error } = await supabase.from("tickets").insert({

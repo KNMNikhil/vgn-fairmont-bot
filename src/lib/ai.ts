@@ -8,7 +8,7 @@ const openai = new OpenAI({
   baseURL: isGemini 
     ? "https://generativelanguage.googleapis.com/v1beta/openai/" 
     : "https://openrouter.ai/api/v1",
-  apiKey: process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY,
+  apiKey: process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
 });
 
 export async function getAIResponse(

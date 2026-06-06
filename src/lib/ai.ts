@@ -24,19 +24,38 @@ export async function getAIResponse(
       ...messages,
     ];
 
-    if (audioData && formattedMessages.length > 0) {
+    if (formattedMessages.length > 0) {
       const lastMessage = formattedMessages[formattedMessages.length - 1];
       if (lastMessage.role === "user") {
-        lastMessage.content = [
-          { type: "text", text: lastMessage.content },
-          {
-            type: "input_audio",
-            input_audio: {
-              data: audioData.base64,
-              format: "wav" // OpenAI standard format tag, usually maps fine
-            }
+        const langSuffix = "\n\n[CRITICAL SYSTEM RULE: You MUST reply in the EXACT same language as the text above. Ignore the language of previous messages.]";
+        if (typeof lastMessage.content === "string") {
+          lastMessage.content += langSuffix;
+        } else if (Array.isArray(lastMessage.content)) {
+          lastMessage.content[0].text += langSuffix;
+        }
+        
+        if (audioData) {
+          if (typeof lastMessage.content === "string") {
+            lastMessage.content = [
+              { type: "text", text: lastMessage.content },
+              {
+                type: "input_audio",
+                input_audio: {
+                  data: audioData.base64,
+                  format: "wav" 
+                }
+              }
+            ];
+          } else if (Array.isArray(lastMessage.content)) {
+            lastMessage.content.push({
+              type: "input_audio",
+              input_audio: {
+                data: audioData.base64,
+                format: "wav" 
+              }
+            });
           }
-        ];
+        }
       }
     }
 

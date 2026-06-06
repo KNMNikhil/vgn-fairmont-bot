@@ -51,9 +51,35 @@ export async function POST(request: NextRequest) {
   if (isAudio) {
     text = "[Voice Message]";
   } else if (isPollResponse) {
-    // Handle poll button response - auto-reply with "Noted."
+    // Handle poll/RSVP button response
     const buttonReply = message.interactive?.button_reply;
+    const buttonId = buttonReply?.id || '';
     const selectedOption = buttonReply?.title || 'Unknown';
+    
+    // Parse button ID to check if it's an event RSVP (format: event_ID_STATUS)
+    if (buttonId.startsWith('event_')) {
+      const parts = buttonId.split('_');
+      if (parts.length >= 3) {
+        const eventId = parts[1];
+        const status = parts[2]; // 'going', 'maybe', 'notgoing'
+        
+        // Find event and register RSVP
+        const { data: event } = await supabase.from("community_events")
+          .select("*")
+          .ilike("id", `${eventId}%`)
+          .single();
+        
+        if (event) {
+          await supabase.from("event_rsvps").upsert({
+            event_id: event.id,
+            phone,
+            name: contact?.profile?.name || null,
+            status: status === 'notgoing' ? 'not_going' : status,
+            guests_count: 1
+          }, { onConflict: 'event_id,phone' });
+        }
+      }
+    }
     
     // Send immediate acknowledgment
     await sendWhatsAppMessage(phone, "Noted.");
@@ -281,12 +307,24 @@ export async function POST(request: NextRequest) {
         if (error || !data || data.length === 0) {
           replyText = "There are no upcoming events in the next " + daysAhead + " days.";
         } else {
-          replyText = `*📅 Upcoming Community Events*\n\n` + data.map((e: { id: string, title: string, event_date: string, event_time: string, location: string, description: string }) => {
+          // Send event details with RSVP polls
+          for (const e of data) {
             const eventDate = new Date(e.event_date + 'T' + e.event_time);
             const formattedDate = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const formattedTime = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-            return `*${e.title}*\n📅 ${formattedDate} at ${formattedTime}\n📍 ${e.location}\n${e.description || ''}\n_Event ID: ${e.id.split('-')[0]}_`;
-          }).join("\n\n") + "\n\nReply with 'RSVP [Event ID]' to register!";
+            
+            const eventInfo = `*${e.title}*\n📅 ${formattedDate} at ${formattedTime}\n📍 ${e.location}\n${e.description || ''}`;
+            await sendWhatsAppMessage(phone, eventInfo);
+            
+            // Send RSVP poll for this event
+            const eventIdShort = e.id.split('-')[0];
+            await sendWhatsAppPoll(phone, `RSVP for ${e.title}`, [
+              { id: `event_${eventIdShort}_going`, title: "Going" },
+              { id: `event_${eventIdShort}_maybe`, title: "Maybe" },
+              { id: `event_${eventIdShort}_notgoing`, title: "Not Going" }
+            ]);
+          }
+          replyText = data.length === 1 ? "Here's the upcoming event with RSVP options above!" : `Here are ${data.length} upcoming events with RSVP options above!`;
         }
       } else if (toolName === "rsvp_to_event") {
         const { data: event, error: eventError } = await supabase.from("community_events")

@@ -22,8 +22,33 @@ export async function sendWhatsAppMessage(to: string, body: string) {
 export async function sendWhatsAppPoll(
   to: string,
   question: string,
-  options: string[]
+  options: Array<string | { id: string; title: string }>
 ) {
+  // Format options - accept both string array and object array
+  const formattedOptions = options.map((opt, i) => {
+    if (typeof opt === 'string') {
+      return {
+        type: "reply",
+        reply: {
+          id: `poll_vote_${i}`,
+          title: opt.substring(0, 20)
+        }
+      };
+    } else {
+      return {
+        type: "reply",
+        reply: {
+          id: opt.id,
+          title: opt.title.substring(0, 20)
+        }
+      };
+    }
+  }).slice(0, 3);
+
+  const displayText = typeof options[0] === 'string' 
+    ? `📊 *Poll:* ${question}\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}\n\nSelect an option below to vote.`
+    : question;
+
   const res = await fetch(
     `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
     {
@@ -40,16 +65,10 @@ export async function sendWhatsAppPoll(
         interactive: {
           type: "button",
           body: {
-            text: `📊 *Poll:* ${question}\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}\n\nReply with the option number to vote.`
+            text: displayText
           },
           action: {
-            buttons: options.slice(0, 3).map((opt, i) => ({
-              type: "reply",
-              reply: {
-                id: `poll_vote_${i}`,
-                title: opt.substring(0, 20)
-              }
-            }))
+            buttons: formattedOptions
           }
         }
       }),

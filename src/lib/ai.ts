@@ -12,10 +12,12 @@ const openai = new OpenAI({
 });
 
 export async function getAIResponse(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: { role: "user" | "assistant"; content: any }[],
   audioData?: { base64: string }
 ) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedMessages: any[] = [
       {
         role: "system",

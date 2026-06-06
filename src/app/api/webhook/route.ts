@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
         if (error || !data || data.length === 0) {
           replyText = "There are no recent notices right now.";
         } else {
-          replyText = "*📢 Latest Community Notices*\n\n" + data.map((n: any) => `*${n.title}*\n${n.content}\n_Date: ${new Date(n.created_at).toLocaleDateString()}_`).join("\n\n");
+          replyText = "*📢 Latest Community Notices*\n\n" + data.map((n: { title: string, content: string, created_at: string }) => `*${n.title}*\n${n.content}\n_Date: ${new Date(n.created_at).toLocaleDateString()}_`).join("\n\n");
         }
       } else if (toolName === "get_local_services") {
         let query = supabase.from("services").select("*");
@@ -190,14 +190,14 @@ export async function POST(request: NextRequest) {
         if (error || !data || data.length === 0) {
           replyText = "I couldn't find any services matching your request in the directory.";
         } else {
-          replyText = "*🛠️ Trusted Local Services*\n\n" + data.map((s: any) => `*${s.category}:* ${s.name}\n📞 ${s.contact}`).join("\n\n");
+          replyText = "*🛠️ Trusted Local Services*\n\n" + data.map((s: { category: string, name: string, contact: string }) => `*${s.category}:* ${s.name}\n📞 ${s.contact}`).join("\n\n");
         }
       } else if (toolName === "get_active_polls") {
         const { data, error } = await supabase.from("polls").select("*").eq("is_active", true);
         if (error || !data || data.length === 0) {
           replyText = "There are no active polls right now.";
         } else {
-          replyText = "*📊 Active Polls*\n\n" + data.map((p: any) => `*Poll ID:* ${p.id.split('-')[0]}\n*Q:* ${p.question}\n*Options:*\n` + p.options.map((opt: string, i: number) => `${i+1}. ${opt}`).join("\n")).join("\n\n") + "\n\nReply with 'Vote [Poll ID] for [Option Number]' to cast your vote!";
+          replyText = "*📊 Active Polls*\n\n" + data.map((p: { id: string, question: string, options: string[] }) => `*Poll ID:* ${p.id.split('-')[0]}\n*Q:* ${p.question}\n*Options:*\n` + p.options.map((opt: string, i: number) => `${i+1}. ${opt}`).join("\n")).join("\n\n") + "\n\nReply with 'Vote [Poll ID] for [Option Number]' to cast your vote!";
         }
       } else if (toolName === "submit_poll_vote") {
         // Find the poll

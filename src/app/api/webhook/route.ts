@@ -371,6 +371,45 @@ export async function POST(request: NextRequest) {
             replyText = `Thank you! Your vote for "${args.option}" has been recorded. ✅`;
           }
         }
+      } else if (toolName === "get_community_groups") {
+        // Load knowledge base
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const kbPath = path.join(process.cwd(), 'src', 'data', 'vgn_fairmont_kb.json');
+        const kbData = JSON.parse(await fs.readFile(kbPath, 'utf-8'));
+        const groups = kbData.community_groups || {};
+        
+        const groupType = args.group_type?.toLowerCase().replace(/ /g, '_');
+        
+        if (groupType && groups[groupType + '_group']) {
+          const group = groups[groupType + '_group'];
+          replyText = `*${group.name}* 📱\n\n${group.description}\n\n`;
+          if (group.join_link && !group.join_link.includes('[')) {
+            replyText += `🔗 *Join Link:*\n${group.join_link}\n\n`;
+          }
+          if (group.admin_contact) {
+            replyText += `👤 *Admin Contact:*\nName: ${group.admin_name || 'Admin'}\nPhone: ${group.admin_contact}\n`;
+            if (!group.join_link || group.join_link.includes('[')) {
+              replyText += `\nContact the admin to be added to the group.`;
+            }
+          }
+          if (group.note) {
+            replyText += `\n\n_Note: ${group.note}_`;
+          }
+        } else {
+          // Show all groups
+          replyText = "*📱 VGN Fairmont Community Groups*\n\n";
+          const groupEntries = Object.entries(groups);
+          for (const [key, group] of groupEntries) {
+            const g = group as { name: string; description: string; join_link?: string; admin_contact?: string; admin_name?: string };
+            replyText += `*${g.name}*\n${g.description}\n`;
+            if (g.admin_contact) {
+              replyText += `Admin: ${g.admin_name || 'Contact'} - ${g.admin_contact}\n`;
+            }
+            replyText += "\n";
+          }
+          replyText += "\nReply with the group name to get join link and admin details!";
+        }
       } else {
         replyText = `Hmm, I tried to use a tool called "${toolName}" but I don't know how to handle it.`;
       }

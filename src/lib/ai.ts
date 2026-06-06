@@ -241,6 +241,22 @@ export async function getAIResponse(
         {
           type: "function",
           function: {
+            name: "get_community_groups",
+            description: "Get community WhatsApp group links and admin contacts. Use when user asks about joining groups like ladies group, pet owners group, sports group, etc.",
+            parameters: {
+              type: "object",
+              properties: {
+                group_type: {
+                  type: "string",
+                  description: "Type of group (e.g., 'ladies', 'pet_owners', 'sports', 'cultural', 'main'). Leave empty to show all groups."
+                }
+              }
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "submit_poll_vote",
             description: "Submit a resident's vote for a specific poll.",
             parameters: {

@@ -317,6 +317,45 @@
     "how_to_add_event": "Contact Association Secretary with event details (title, date, time, location, description) at least 2 weeks in advance for approval."
   },
 
+  "community_groups": {
+    "ladies_group": {
+      "name": "VGN Fairmont Ladies Group",
+      "description": "WhatsApp group for all ladies in the community",
+      "join_link": "[WhatsApp Group Link]",
+      "admin_contact": "+91-98765-XXXXX",
+      "admin_name": "[Admin Name]"
+    },
+    "pet_owners_group": {
+      "name": "VGN Fairmont Pet Owners",
+      "description": "Official WhatsApp group for all pet owners. Required for all residents with pets.",
+      "join_link": "[WhatsApp Group Link]",
+      "admin_contact": "+91-98765-XXXXX",
+      "admin_name": "[Admin Name]",
+      "note": "All pet owners must join this group as per community bylaws"
+    },
+    "main_community_group": {
+      "name": "VGN Fairmont Official",
+      "description": "Main community WhatsApp group for announcements and discussions",
+      "join_link": "[WhatsApp Group Link]",
+      "admin_contact": "+91-98765-43210",
+      "admin_name": "Association President"
+    },
+    "sports_group": {
+      "name": "VGN Fairmont Sports & Fitness",
+      "description": "For sports enthusiasts, fitness activities, and organizing games",
+      "join_link": "[WhatsApp Group Link]",
+      "admin_contact": "+91-98765-XXXXX",
+      "admin_name": "[Admin Name]"
+    },
+    "cultural_group": {
+      "name": "VGN Fairmont Cultural Committee",
+      "description": "For organizing cultural events, festivals, and celebrations",
+      "join_link": "[WhatsApp Group Link]",
+      "admin_contact": "+91-98765-XXXXX",
+      "admin_name": "[Admin Name]"
+    }
+  },
+
   "faq": {
     "how_to_pay_maintenance": "Maintenance charges can be paid via bank transfer, online portal, or cheque made to VGN Fairmont Management.",
     "late_payment_charges": "1% of maintenance amount per month after the due date (1st of month).",

@@ -131,25 +131,98 @@ export async function POST(request: NextRequest) {
     let replyText = "";
 
     if (aiResponse.tool_call) {
+      const toolName = aiResponse.tool_call.name;
       const args = aiResponse.tool_call.args;
-      const targetPhone = args.shop_type === "fruits_shop" 
-        ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
-        : (process.env.IRON_SHOP_NUMBER || "919677197402");
 
-      if (targetPhone) {
-        const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;
-        const shopRes = await sendWhatsAppMessage(targetPhone, orderMessage);
-        
-        if (shopRes.error) {
-          console.error("Shop Message Failed:", shopRes.error);
-          replyText = `⚠️ I tried to send your order, but the ${args.shop_type.replace("_", " ")} owner's WhatsApp window is closed. They need to message me first so I can forward your orders!`;
+      if (toolName === "route_shop_order") {
+        const targetPhone = args.shop_type === "fruits_shop" 
+          ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
+          : (process.env.IRON_SHOP_NUMBER || "919677197402");
+
+        if (targetPhone) {
+          const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;
+          const shopRes = await sendWhatsAppMessage(targetPhone, orderMessage);
+          
+          if (shopRes.error) {
+            console.error("Shop Message Failed:", shopRes.error);
+            replyText = `⚠️ I tried to send your order, but the ${args.shop_type.replace("_", " ")} owner's WhatsApp window is closed. They need to message me first so I can forward your orders!`;
+          } else {
+            replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+          }
         } else {
-          replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+          replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
         }
-      } else {
-        replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
+      } else if (toolName === "create_ticket") {
+        const { data, error } = await supabase.from("tickets").insert({
+          phone,
+          description: args.description,
+          status: 'open'
+        }).select().single();
+        if (error) {
+          console.error("Ticket error:", error);
+          replyText = "Sorry, I couldn't log your ticket right now. Please try again later.";
+        } else {
+          replyText = `Your ticket has been logged successfully! 🎫\n*Ticket ID:* ${data.id.split('-')[0]}\n*Status:* Open\nWe will look into it soon.`;
+        }
+      } else if (toolName === "check_ticket_status") {
+        const { data, error } = await supabase.from("tickets")
+          .select("*")
+          .ilike("id", `${args.ticket_id}%`)
+          .single();
+        if (error || !data) {
+          replyText = `I couldn't find a ticket with ID "${args.ticket_id}".`;
+        } else {
+          replyText = `*Ticket Status* 🎫\n*ID:* ${data.id.split('-')[0]}\n*Issue:* ${data.description}\n*Status:* ${data.status.toUpperCase()}\n*Logged:* ${new Date(data.created_at).toLocaleDateString()}`;
+        }
+      } else if (toolName === "get_latest_notices") {
+        const { data, error } = await supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(3);
+        if (error || !data || data.length === 0) {
+          replyText = "There are no recent notices right now.";
+        } else {
+          replyText = "*📢 Latest Community Notices*\n\n" + data.map((n: any) => `*${n.title}*\n${n.content}\n_Date: ${new Date(n.created_at).toLocaleDateString()}_`).join("\n\n");
+        }
+      } else if (toolName === "get_local_services") {
+        let query = supabase.from("services").select("*");
+        if (args.category) {
+          query = query.ilike("category", `%${args.category}%`);
+        }
+        const { data, error } = await query;
+        if (error || !data || data.length === 0) {
+          replyText = "I couldn't find any services matching your request in the directory.";
+        } else {
+          replyText = "*🛠️ Trusted Local Services*\n\n" + data.map((s: any) => `*${s.category}:* ${s.name}\n📞 ${s.contact}`).join("\n\n");
+        }
+      } else if (toolName === "get_active_polls") {
+        const { data, error } = await supabase.from("polls").select("*").eq("is_active", true);
+        if (error || !data || data.length === 0) {
+          replyText = "There are no active polls right now.";
+        } else {
+          replyText = "*📊 Active Polls*\n\n" + data.map((p: any) => `*Poll ID:* ${p.id.split('-')[0]}\n*Q:* ${p.question}\n*Options:*\n` + p.options.map((opt: string, i: number) => `${i+1}. ${opt}`).join("\n")).join("\n\n") + "\n\nReply with 'Vote [Poll ID] for [Option Number]' to cast your vote!";
+        }
+      } else if (toolName === "submit_poll_vote") {
+        // Find the poll
+        const { data: poll, error: pollError } = await supabase.from("polls").select("*").ilike("id", `${args.poll_id}%`).single();
+        if (pollError || !poll) {
+          replyText = `I couldn't find a poll with ID "${args.poll_id}".`;
+        } else {
+          const { error: voteError } = await supabase.from("poll_votes").insert({
+            poll_id: poll.id,
+            phone,
+            vote: args.option
+          });
+          if (voteError?.code === "23505") {
+            replyText = "You have already voted on this poll!";
+          } else if (voteError) {
+            console.error("Vote error:", voteError);
+            replyText = "Sorry, I couldn't register your vote. Please try again.";
+          } else {
+            replyText = `Thank you! Your vote for "${args.option}" has been recorded. ✅`;
+          }
+        }
       }
     } else {
+      replyText = aiResponse.text;
+    }
       replyText = aiResponse.text;
     }
 

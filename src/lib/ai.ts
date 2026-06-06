@@ -71,6 +71,93 @@ export async function getAIResponse(
               required: ["shop_type", "item", "flat_number"]
             }
           }
+        },
+        {
+          type: "function",
+          function: {
+            name: "create_ticket",
+            description: "Create a maintenance or complaint ticket. Use when a resident reports an issue.",
+            parameters: {
+              type: "object",
+              properties: {
+                description: {
+                  type: "string",
+                  description: "Detailed description of the issue."
+                }
+              },
+              required: ["description"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "check_ticket_status",
+            description: "Check the status of a specific ticket.",
+            parameters: {
+              type: "object",
+              properties: {
+                ticket_id: {
+                  type: "string",
+                  description: "The UUID or short ID of the ticket."
+                }
+              },
+              required: ["ticket_id"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_latest_notices",
+            description: "Fetch the latest community announcements and notices.",
+            parameters: { type: "object", properties: {} }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_local_services",
+            description: "Get a list of trusted local service vendors (e.g., Plumber, Electrician).",
+            parameters: {
+              type: "object",
+              properties: {
+                category: {
+                  type: "string",
+                  description: "The type of service requested (e.g., Plumber, Electrician, Carpenter). Leave empty to get all."
+                }
+              }
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_active_polls",
+            description: "Fetch all active community polls that residents can vote on.",
+            parameters: { type: "object", properties: {} }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "submit_poll_vote",
+            description: "Submit a resident's vote for a specific poll.",
+            parameters: {
+              type: "object",
+              properties: {
+                poll_id: {
+                  type: "string",
+                  description: "The UUID of the poll being voted on."
+                },
+                option: {
+                  type: "string",
+                  description: "The option the resident is voting for."
+                }
+              },
+              required: ["poll_id", "option"]
+            }
+          }
         }
       ],
       tool_choice: "auto"
@@ -81,12 +168,12 @@ export async function getAIResponse(
     // Check if the AI wants to call a tool
     if (message?.tool_calls && message.tool_calls.length > 0) {
       const toolCall = message.tool_calls[0];
-      if (toolCall.type === "function" && toolCall.function.name === "route_shop_order") {
-        const args = JSON.parse(toolCall.function.arguments);
+      if (toolCall.type === "function") {
+        const args = toolCall.function.arguments ? JSON.parse(toolCall.function.arguments) : {};
         return {
           text: "", // The webhook will handle the rest based on tool_call
           tool_call: {
-            name: "route_shop_order",
+            name: toolCall.function.name,
             args: args
           }
         };

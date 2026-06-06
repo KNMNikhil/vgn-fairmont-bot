@@ -5,7 +5,7 @@ const supabase = createClient(
 );
 
 async function check() {
-  const { data } = await supabase.from('messages').select('role, content').eq('conversation_id', '33498102-ebf3-4a47-9bbd-14377fb41ba6').order('created_at', { ascending: true });
-  console.log(JSON.stringify(data, null, 2));
+  const { data } = await supabase.from('conversations').select('*').limit(1);
+  console.log(data);
 }
 check();

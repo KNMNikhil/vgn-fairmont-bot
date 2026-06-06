@@ -121,6 +121,184 @@
       "contact": "+91-98765-66666",
       "delivery_time": "5:30 AM - 6:30 AM",
       "note": "Contact for subscription and delivery details"
+    },
+    "coconut_seller": {
+      "name": "Ravi (Coconut Seller)",
+      "description": "Fresh coconut vendor",
+      "contact": "+91-98765-77777",
+      "note": "Contact for fresh coconuts and coconut water"
+    },
+    "maids": {
+      "maid_1": {
+        "name": "Lakshmi",
+        "contact": "+91-98765-88881",
+        "services": "House cleaning, cooking",
+        "availability": "Morning shifts"
+      },
+      "maid_2": {
+        "name": "Kamala",
+        "contact": "+91-98765-88882",
+        "services": "House cleaning, utensil washing",
+        "availability": "Morning and evening shifts"
+      },
+      "maid_3": {
+        "name": "Meena",
+        "contact": "+91-98765-88883",
+        "services": "House cleaning, cooking",
+        "availability": "Full-time available"
+      },
+      "maid_4": {
+        "name": "Savitri",
+        "contact": "+91-98765-88884",
+        "services": "Baby care, house cleaning",
+        "availability": "Morning shifts"
+      },
+      "maid_5": {
+        "name": "Radha",
+        "contact": "+91-98765-88885",
+        "services": "House cleaning, utensil washing, laundry",
+        "availability": "Evening shifts"
+      }
+    }
+  },
+
+  "security_personnel": {
+    "note": "Security personnel work in shifts. Contact the appropriate person based on time of day.",
+    "b1_block": {
+      "morning_shift": {
+        "name": "Ramesh",
+        "contact": "+91-98765-91111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Kumar",
+        "contact": "+91-98765-91112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Vijay",
+        "contact": "+91-98765-91113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "b2_block": {
+      "morning_shift": {
+        "name": "Suresh",
+        "contact": "+91-98765-92111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Ganesh",
+        "contact": "+91-98765-92112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Ravi",
+        "contact": "+91-98765-92113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "b3_block": {
+      "morning_shift": {
+        "name": "Prakash",
+        "contact": "+91-98765-93111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Mohan",
+        "contact": "+91-98765-93112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Arun",
+        "contact": "+91-98765-93113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "b4_block": {
+      "morning_shift": {
+        "name": "Shankar",
+        "contact": "+91-98765-94111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Dinesh",
+        "contact": "+91-98765-94112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Murali",
+        "contact": "+91-98765-94113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "b5_block": {
+      "morning_shift": {
+        "name": "Rajesh",
+        "contact": "+91-98765-95111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Karthik",
+        "contact": "+91-98765-95112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Senthil",
+        "contact": "+91-98765-95113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "b6_block": {
+      "morning_shift": {
+        "name": "Bala",
+        "contact": "+91-98765-96111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Selvam",
+        "contact": "+91-98765-96112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Manoj",
+        "contact": "+91-98765-96113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "d_block": {
+      "morning_shift": {
+        "name": "Venkat",
+        "contact": "+91-98765-97111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Arjun",
+        "contact": "+91-98765-97112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Praveen",
+        "contact": "+91-98765-97113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
+    },
+    "main_gate": {
+      "morning_shift": {
+        "name": "Gopal",
+        "contact": "+91-98765-98111",
+        "shift_time": "6:00 AM - 2:00 PM"
+      },
+      "evening_shift": {
+        "name": "Naveen",
+        "contact": "+91-98765-98112",
+        "shift_time": "2:00 PM - 10:00 PM"
+      },
+      "night_shift": {
+        "name": "Sanjay",
+        "contact": "+91-98765-98113",
+        "shift_time": "10:00 PM - 6:00 AM"
+      }
     }
   },
 

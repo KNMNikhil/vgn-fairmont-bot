@@ -159,20 +159,38 @@ export async function POST(request: NextRequest) {
           ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
           : (process.env.IRON_SHOP_NUMBER || "919677197402");
 
+        // Get current IST date and time for order
+        const now = new Date();
+        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        const orderDateTime = istTime.toLocaleString('en-US', { 
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        });
+
         if (targetPhone) {
-          const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}`;
+          const orderMessage = `*New Order from Resident*\nName: ${name || "Resident"}\nPhone: ${phone}\nFlat: ${args.flat_number}\nItem: ${args.item}\nDate & Time: ${orderDateTime} IST`;
           const shopRes = await sendWhatsAppMessage(targetPhone, orderMessage);
           
           if (shopRes.error) {
             console.error("Shop Message Failed:", shopRes.error);
             replyText = `⚠️ I tried to send your order, but the ${args.shop_type.replace("_", " ")} owner's WhatsApp window is closed. They need to message me first so I can forward your orders!`;
           } else {
-            replyText = `Your order for "${args.item}" has been sent to the ${args.shop_type.replace("_", " ")}! They will deliver it to ${args.flat_number}.`;
+            replyText = `✅ Your order has been placed!\n\n📦 *Order Details:*\nItem: ${args.item}\nFlat: ${args.flat_number}\nShop: ${args.shop_type.replace("_", " ").toUpperCase()}\n📅 Date & Time: ${orderDateTime} IST\n\nThe shop will deliver it soon!`;
           }
         } else {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
         }
       } else if (toolName === "create_ticket") {
+        // Get current IST date and time for ticket
+        const now = new Date();
+        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        const ticketDateTime = istTime.toLocaleString('en-US', { 
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'Asia/Kolkata'
+        });
+
         const { data, error } = await supabase.from("tickets").insert({
           phone,
           description: args.description,
@@ -182,7 +200,7 @@ export async function POST(request: NextRequest) {
           console.error("Ticket error:", error);
           replyText = "Sorry, I couldn't log your ticket right now. Please try again later.";
         } else {
-          replyText = `Your ticket has been logged successfully! 🎫\n*Ticket ID:* ${data.id.split('-')[0]}\n*Status:* Open\nWe will look into it soon.`;
+          replyText = `Your ticket has been logged successfully! 🎫\n\n*Ticket Details:*\nTicket ID: ${data.id.split('-')[0]}\nStatus: Open\n📅 Logged on: ${ticketDateTime} IST\n\nWe will look into it soon.`;
         }
       } else if (toolName === "check_ticket_status") {
         const { data, error } = await supabase.from("tickets")

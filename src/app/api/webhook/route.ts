@@ -219,6 +219,8 @@ export async function POST(request: NextRequest) {
             replyText = `Thank you! Your vote for "${args.option}" has been recorded. ✅`;
           }
         }
+      } else {
+        replyText = `Hmm, I tried to use a tool called "${toolName}" but I don't know how to handle it.`;
       }
     } else {
       replyText = aiResponse.text;

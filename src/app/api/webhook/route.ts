@@ -45,15 +45,21 @@ export async function POST(request: NextRequest) {
 
   const phone = message.from;
   const isAudio = message.type === "audio";
-  const isPollResponse = message.type === "interactive" && message.interactive?.type === "nfm_reply";
+  const isPollResponse = message.type === "interactive" && message.interactive?.type === "button_reply";
   
   let text = "";
   if (isAudio) {
     text = "[Voice Message]";
   } else if (isPollResponse) {
-    // Handle poll response
-    const pollResponse = message.interactive?.nfm_reply;
-    text = `Poll response: ${pollResponse?.body || 'N/A'}`;
+    // Handle poll button response - auto-reply with "Noted."
+    const buttonReply = message.interactive?.button_reply;
+    const selectedOption = buttonReply?.title || 'Unknown';
+    
+    // Send immediate acknowledgment
+    await sendWhatsAppMessage(phone, "Noted.");
+    
+    // Return early to skip AI processing
+    return Response.json({ status: "poll_response_acknowledged" });
   } else {
     text = message.text?.body || "";
   }

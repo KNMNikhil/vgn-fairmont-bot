@@ -11,6 +11,15 @@
   },
 
   "amenities": {
+    "play_area": {
+      "location": "In front of D Block, near the vending machine, ground floor",
+      "features": "Children's play equipment | Open play space",
+      "nearby": "Second iron shop and fruits shop are located nearby"
+    },
+    "vending_machine": {
+      "location": "Below B6 block, ground floor",
+      "nearby": "Near the play area"
+    },
     "swimming_pool": {
       "location": "Building A, 2nd Floor",
       "timings": "6:00 AM - 8:00 PM",
@@ -75,6 +84,27 @@
       "location": "Central courtyard",
       "timings": "6:00 AM - 10:00 PM",
       "features": "Green space | Seating areas | Walking paths"
+    }
+  },
+
+  "shops_and_services": {
+    "iron_shop_1": {
+      "location": "Below B4 block, backside, ground floor",
+      "description": "Iron and laundry services"
+    },
+    "iron_shop_2": {
+      "location": "Near the play area and fruits shop, ground floor",
+      "description": "Second iron and laundry services shop"
+    },
+    "fruits_shop": {
+      "location": "Below and backside of B5 block, near the play area, ground floor",
+      "description": "Fresh fruits and vegetables",
+      "nearby": "Close to physiotherapy clinic and second iron shop"
+    },
+    "physiotherapy_clinic": {
+      "location": "Below and backside of B5 block, near the fruits shop, ground floor",
+      "description": "Physiotherapy and rehabilitation services",
+      "nearby": "Next to fruits shop"
     }
   },
 

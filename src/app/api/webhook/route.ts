@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, sendWhatsAppEvent } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
@@ -344,17 +344,22 @@ export async function POST(request: NextRequest) {
             // End time: assume 2 hours duration if not specified
             const endDateTime = new Date(eventDateTime.getTime() + (2 * 60 * 60 * 1000));
             
-            await sendWhatsAppEvent(phone, {
-              name: e.title,
-              location: e.location,
-              startTime: eventDateTime.toISOString(),
-              endTime: endDateTime.toISOString(),
-              description: e.description || `Join us for ${e.title} at VGN Fairmont!`
+            const formattedDate = eventDateTime.toLocaleString('en-US', {
+              timeZone: 'Asia/Kolkata',
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit', hour12: true
             });
+            const question = `🎉 *${e.title}*\n📍 Location: ${e.location}\n🕒 Time: ${formattedDate}\n\n${e.description || ""}\n\nWill you be attending?`;
+
+            await sendWhatsAppPoll(phone, question, [
+              { id: `event_${e.id}_going`, title: "Going ✅" },
+              { id: `event_${e.id}_maybe`, title: "Maybe 🤷" },
+              { id: `event_${e.id}_notgoing`, title: "Not Going ❌" }
+            ]);
           }
           replyText = data.length === 1 
-            ? "📅 Here's the upcoming event! Tap the event card above to add it to your calendar and RSVP." 
-            : `📅 Here are ${data.length} upcoming events! Tap each event card to add to your calendar and RSVP.`;
+            ? "📅 Here's the upcoming event! Please use the buttons above to RSVP." 
+            : `📅 Here are ${data.length} upcoming events! Please use the buttons above to RSVP for each one.`;
         }
       } else if (toolName === "rsvp_to_event") {
         const { data: event, error: eventError } = await supabase.from("community_events")

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage, downloadWhatsAppMedia } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
@@ -38,14 +38,26 @@ export async function POST(request: NextRequest) {
   const message = value.messages[0];
   const contact = value.contacts?.[0];
 
-  // Only handle text and audio messages
-  if (!["text", "audio"].includes(message.type)) {
+  // Only handle text, audio, and interactive messages
+  if (!["text", "audio", "interactive"].includes(message.type)) {
     return Response.json({ status: "unsupported_type" });
   }
 
   const phone = message.from;
   const isAudio = message.type === "audio";
-  const text = isAudio ? "[Voice Message]" : message.text.body;
+  const isPollResponse = message.type === "interactive" && message.interactive?.type === "nfm_reply";
+  
+  let text = "";
+  if (isAudio) {
+    text = "[Voice Message]";
+  } else if (isPollResponse) {
+    // Handle poll response
+    const pollResponse = message.interactive?.nfm_reply;
+    text = `Poll response: ${pollResponse?.body || 'N/A'}`;
+  } else {
+    text = message.text?.body || "";
+  }
+  
   const name = contact?.profile?.name || null;
   const whatsappMsgId = message.id;
 
@@ -242,7 +254,11 @@ export async function POST(request: NextRequest) {
         if (error || !data || data.length === 0) {
           replyText = "There are no active polls right now.";
         } else {
-          replyText = "*📊 Active Polls*\n\n" + data.map((p: { id: string, question: string, options: string[] }) => `*Poll ID:* ${p.id.split('-')[0]}\n*Q:* ${p.question}\n*Options:*\n` + p.options.map((opt: string, i: number) => `${i+1}. ${opt}`).join("\n")).join("\n\n") + "\n\nReply with 'Vote [Poll ID] for [Option Number]' to cast your vote!";
+          // Send native WhatsApp polls
+          for (const poll of data) {
+            await sendWhatsAppPoll(phone, poll.question, poll.options);
+          }
+          replyText = `📊 I've sent ${data.length} active poll(s) above. Please vote directly in the poll!`;
         }
       } else if (toolName === "get_upcoming_events") {
         const daysAhead = args.days_ahead || 30;

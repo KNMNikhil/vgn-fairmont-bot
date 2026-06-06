@@ -223,8 +223,6 @@ export async function POST(request: NextRequest) {
     } else {
       replyText = aiResponse.text;
     }
-      replyText = aiResponse.text;
-    }
 
     // Send response via WhatsApp
     await sendWhatsAppMessage(phone, replyText);

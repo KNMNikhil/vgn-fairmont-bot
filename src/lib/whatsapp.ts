@@ -79,6 +79,47 @@ export async function sendWhatsAppPoll(
   return result;
 }
 
+// Send WhatsApp Native Event
+export async function sendWhatsAppEvent(
+  to: string,
+  eventData: {
+    name: string;
+    location: string;
+    startTime: string; // ISO 8601 format
+    endTime: string;   // ISO 8601 format
+    description?: string;
+  }
+) {
+  const res = await fetch(
+    `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "interactive",
+        interactive: {
+          type: "event_message",
+          event_message: {
+            name: eventData.name,
+            location: eventData.location,
+            start_time: eventData.startTime,
+            end_time: eventData.endTime,
+            description: eventData.description || ""
+          }
+        }
+      }),
+    }
+  );
+  const result = await res.json();
+  console.log("Event send result:", JSON.stringify(result, null, 2));
+  return result;
+}
+
 export async function downloadWhatsAppMedia(mediaId: string): Promise<{ base64: string, mimeType: string }> {
   // 1. Get Media URL
   const urlRes = await fetch(`https://graph.facebook.com/v22.0/${mediaId}`, {

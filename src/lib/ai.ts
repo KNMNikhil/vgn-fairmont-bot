@@ -99,6 +99,14 @@ export async function getAIResponse(
         {
           type: "function",
           function: {
+            name: "get_current_datetime",
+            description: "Get the current date and time in IST. MUST be called when user asks 'what time is it', 'what is the date', 'current time', 'today's date', or any variation of current date/time query.",
+            parameters: { type: "object", properties: {} }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "route_shop_order",
             description: "Route an order to a specific shop (e.g., fruits shop, iron shop). Automatically extracts the sender's name and phone number. MUST ONLY be called if the user has provided their block and flat/door number.",
             parameters: {

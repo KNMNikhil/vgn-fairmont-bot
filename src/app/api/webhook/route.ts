@@ -134,7 +134,27 @@ export async function POST(request: NextRequest) {
       const toolName = aiResponse.tool_call.name;
       const args = aiResponse.tool_call.args;
 
-      if (toolName === "route_shop_order") {
+      if (toolName === "get_current_datetime") {
+        // Get current IST date and time
+        const now = new Date();
+        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        
+        const dateStr = istTime.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        
+        const timeStr = istTime.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: true 
+        });
+        
+        replyText = `📅 *Current Date:* ${dateStr}\n🕐 *Current Time:* ${timeStr} IST`;
+      } else if (toolName === "route_shop_order") {
         const targetPhone = args.shop_type === "fruits_shop" 
           ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
           : (process.env.IRON_SHOP_NUMBER || "919677197402");

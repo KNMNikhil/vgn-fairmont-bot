@@ -34,26 +34,30 @@ export async function sendWhatsAppPoll(
       },
       body: JSON.stringify({
         messaging_product: "whatsapp",
+        recipient_type: "individual",
         to,
         type: "interactive",
         interactive: {
-          type: "poll_creation",
-          header: {
-            type: "text",
-            text: "📊 Community Poll"
-          },
+          type: "button",
           body: {
-            text: question
+            text: `📊 *Poll:* ${question}\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}\n\nReply with the option number to vote.`
           },
           action: {
-            name: "poll_creation",
-            values: options.slice(0, 12).map(opt => ({ text: opt })) // Max 12 options
+            buttons: options.slice(0, 3).map((opt, i) => ({
+              type: "reply",
+              reply: {
+                id: `poll_vote_${i}`,
+                title: opt.substring(0, 20)
+              }
+            }))
           }
         }
       }),
     }
   );
-  return res.json();
+  const result = await res.json();
+  console.log("Poll send result:", JSON.stringify(result, null, 2));
+  return result;
 }
 
 export async function downloadWhatsAppMedia(mediaId: string): Promise<{ base64: string, mimeType: string }> {

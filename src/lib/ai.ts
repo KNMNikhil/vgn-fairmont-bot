@@ -192,7 +192,7 @@ export async function getAIResponse(
       };
     }
 
-    return { text: message?.content || "Sorry, I couldn't generate a response." };
+    return { text: message?.content || `DEBUG - AI returned empty content. Raw message: ${JSON.stringify(message)}` };
   } catch (error) {
     console.error("AI Generation Error:", error);
     return { text: "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!" };

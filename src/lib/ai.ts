@@ -17,11 +17,40 @@ export async function getAIResponse(
   audioData?: { base64: string }
 ) {
   try {
+    // Get current time for context
+    const now = new Date();
+    const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const birthTime = new Date('2026-06-05T23:59:25+05:30'); // June 5, 2026, 11:59:25 PM IST
+    
+    // Calculate age
+    const ageMs = now.getTime() - birthTime.getTime();
+    const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+    const ageHours = Math.floor((ageMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const ageMinutes = Math.floor((ageMs % (1000 * 60 * 60)) / (1000 * 60));
+    const ageSeconds = Math.floor((ageMs % (1000 * 60)) / 1000);
+    
+    // Format current time
+    const timeStr = istTime.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      hour12: true 
+    });
+    const dateStr = istTime.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    // Inject current time context into system prompt
+    const timeContext = `\n\n[CURRENT TIME CONTEXT - Use this for time/date questions]:\n- Current Date & Time (IST): ${dateStr} at ${timeStr}\n- Your Age: ${ageDays} days, ${ageHours} hours, ${ageMinutes} minutes, and ${ageSeconds} seconds old\n- Birth Time: June 5, 2026 at 11:59:25 PM IST`;
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedMessages: any[] = [
       {
         role: "system",
-        content: COMMUNITY_SYSTEM_PROMPT,
+        content: COMMUNITY_SYSTEM_PROMPT + timeContext,
       },
       ...messages,
     ];

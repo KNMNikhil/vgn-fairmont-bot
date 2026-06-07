@@ -59,15 +59,11 @@ export async function POST(request: NextRequest) {
   }
 
   const message = value.messages[0];
-  const contact = value.contacts?.[0];
-
-  // Only handle text, audio, and interactive messages
-  if (!["text", "audio", "interactive"].includes(message.type)) {
-    return Response.json({ status: "unsupported_type" });
-  }
+  const isAudio = message.type === "audio";
 
   const phone = message.from;
-  const isAudio = message.type === "audio";
+  const contact = value.contacts?.[0];
+
   const isPollResponse = message.type === "interactive" && message.interactive?.type === "button_reply";
   const isEventResponse = message.type === "interactive" && message.interactive?.type === "event_rsvp";
   
@@ -141,7 +137,15 @@ export async function POST(request: NextRequest) {
     // Return early to skip AI processing
     return Response.json({ status: "poll_response_acknowledged" });
   } else {
-    text = message.text?.body || "";
+    text = message.text?.body;
+    if (!text) {
+      if (message.type === "image") text = message.image?.caption || "[User sent an image]";
+      else if (message.type === "video") text = message.video?.caption || "[User sent a video]";
+      else if (message.type === "document") text = message.document?.caption || "[User sent a document]";
+      else if (message.type === "location") text = "[User sent a location]";
+      else if (message.type === "sticker") text = "[User sent a sticker]";
+      else text = `[User sent a ${message.type || 'unknown'} message]`;
+    }
   }
   
   const name = contact?.profile?.name || null;

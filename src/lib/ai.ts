@@ -321,10 +321,21 @@ export async function getAIResponse(
       };
     }
 
+    if (!message?.content && !toolCallName) {
+      console.warn("Gemini returned empty content. Possible safety filter trigger.");
+      return { text: "I'm not sure how to answer that! Could you try rephrasing your question?" };
+    }
+
     return { text: message?.content || "" };
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Generation Critical Error (All Retries Failed):", error);
-    // Return empty string so the webhook drops the message silently instead of spamming the user
-    return { text: "" };
+    
+    // If it's a rate limit from spamming 100 messages, silently drop it so we don't spam back.
+    if (error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("quota") || error?.message?.includes("rate limit")) {
+      return { text: "" };
+    }
+
+    // For any other internal error, respond gracefully instead of getting stuck
+    return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
   }
 }

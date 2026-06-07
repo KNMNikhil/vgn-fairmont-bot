@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
@@ -19,7 +20,29 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  // 1. Get raw body for cryptographic signature verification
+  const rawBody = await request.text();
+  
+  // 2. Verify Meta's Digital Wax Seal (X-Hub-Signature-256)
+  const signature = request.headers.get("x-hub-signature-256");
+  const appSecret = process.env.META_APP_SECRET;
+
+  if (appSecret && signature) {
+    const expectedSignature = `sha256=${crypto
+      .createHmac("sha256", appSecret)
+      .update(rawBody)
+      .digest("hex")}`;
+      
+    if (signature !== expectedSignature) {
+      console.error("CRITICAL SECURITY ALERT: Webhook signature spoofing detected! Rejecting request.");
+      return new Response("Unauthorized", { status: 401 });
+    }
+  } else if (!appSecret) {
+    console.warn("SECURITY WARNING: META_APP_SECRET is not set. Skipping signature verification. THIS IS INSECURE IN PRODUCTION.");
+  }
+
+  // 3. Parse the verified JSON body
+  const body = JSON.parse(rawBody);
 
   // Only process whatsapp_business_account events
   if (body.object !== "whatsapp_business_account") {

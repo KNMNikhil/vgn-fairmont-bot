@@ -81,23 +81,6 @@ export async function getAIResponse(
     // Inject current time context into system prompt
     const timeContext = `\n\n[CURRENT TIME CONTEXT - Use this for time/date questions]:\n- Current Date & Time (IST): ${dateStr} at ${timeStr}\n- Your Age: ${ageDays} days, ${ageHours} hours, ${ageMinutes} minutes, and ${ageSeconds} seconds old\n- Birth Time: June 5, 2026 at 11:59:25 PM IST`;
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedMessages: any[] = [
-      {
-        role: "system",
-        content: COMMUNITY_SYSTEM_PROMPT + timeContext,
-      },
-      {
-        role: "system",
-        content: `TOOL USAGE RULES — CRITICAL:
-NEVER call any tool to answer questions about: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or any other information already in the knowledge base above.
-For ALL of these questions, read the knowledge base and reply DIRECTLY.
-Tools are ONLY for: creating tickets, checking ticket status, getting live notices, routing shop orders, getting current time, RSVPing to events, fetching polls.
-If you call a tool for something that is already in the knowledge base, that is a CRITICAL ERROR.`
-      },
-      ...messages,
-    ];
-
     // Detect language of the last user message programmatically
     const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
     const lastUserText = typeof lastUserMsg?.content === "string" 
@@ -106,55 +89,51 @@ If you call a tool for something that is already in the knowledge base, that is 
     
     const isAudioMessage = lastUserText === "AUDIO_MESSAGE_RECEIVED" && !!audioData;
     const detectedLangInstruction = isAudioMessage
-      ? "DETECT FROM AUDIO: Listen to the audio in this message. Identify the spoken language. Reply 100% in that same language and script. Do NOT use Tamil just because previous messages were in Tamil. Do NOT use any other language. Match the audio's language exactly."
+      ? "AUDIO: Detect language from audio and reply in that spoken language only."
       : detectLanguage(lastUserText);
-    
-    // Inject a hard system-level language override RIGHT BEFORE the last user message
-    const lastIdx = formattedMessages.length - 1;
-    formattedMessages.splice(lastIdx, 0, {
-      role: "system",
-      content: `🚨 MANDATORY LANGUAGE OVERRIDE - HIGHEST PRIORITY 🚨
-${isAudioMessage 
-  ? `This is a VOICE MESSAGE. Listen to the audio and detect the spoken language. Reply ENTIRELY in that language.
-Do NOT reply in Tamil just because previous messages were in Tamil.
-Do NOT use any prior conversation language. USE ONLY THE LANGUAGE SPOKEN IN THE AUDIO.
-If the audio is in English, reply in English only. If in Tamil, reply in Tamil only.`
-  : `The user's current message is in: ${detectedLangInstruction}
-You MUST reply ENTIRELY in this language and script.
-DO NOT use any other script or language in your reply — not even for names or words.`}
-This overrides ALL previous instructions and conversation history.
-VIOLATING THIS RULE IS A CRITICAL FAILURE.`
-    });
 
+    // Tool usage ban — appended directly to the ONE system message
+    const toolBanRules = `
+
+TOOL USAGE — STRICT RULES:
+NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
+For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, get_current_datetime, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services.
+
+LANGUAGE RULE (CURRENT MESSAGE):
+${isAudioMessage
+  ? "This is a VOICE MESSAGE. Detect the spoken language from the audio. Reply ENTIRELY in that spoken language. Do NOT default to Tamil or any prior conversation language."
+  : `Reply ENTIRELY in: ${detectedLangInstruction}`}`;
+
+    // SINGLE system message — Gemini only reads the first system message reliably
+    const formattedMessages: any[] = [
+      {
+        role: "system",
+        content: COMMUNITY_SYSTEM_PROMPT + timeContext + toolBanRules,
+      },
+      ...messages,
+    ];
+
+    // Handle audio attachment on the last user message
     if (formattedMessages.length > 0) {
       const lastMessage = formattedMessages[formattedMessages.length - 1];
-      if (lastMessage.role === "user") {
-        if (audioData) {
-          // For audio, set the text prefix to explicitly instruct language detection from audio
-          const audioTextPrefix = "[VOICE MESSAGE - Transcribe this audio, detect the language of the speech, and reply in exactly that spoken language. Ignore all previous conversation language.]: ";
-          if (typeof lastMessage.content === "string") {
-            lastMessage.content = [
-              { type: "text", text: audioTextPrefix + lastMessage.content },
-              {
-                type: "input_audio",
-                input_audio: {
-                  data: audioData.base64,
-                  format: "wav" 
-                }
-              }
-            ];
-          } else if (Array.isArray(lastMessage.content)) {
-            lastMessage.content.push({
-              type: "input_audio",
-              input_audio: {
-                data: audioData.base64,
-                format: "wav" 
-              }
-            });
-          }
+      if (lastMessage.role === "user" && audioData) {
+        const audioTextPrefix = isAudioMessage 
+          ? "[VOICE MESSAGE - transcribe and detect language, reply in that spoken language]: "
+          : "";
+        if (typeof lastMessage.content === "string") {
+          lastMessage.content = [
+            { type: "text", text: audioTextPrefix + lastMessage.content },
+            { type: "input_audio", input_audio: { data: audioData.base64, format: "wav" } }
+          ];
+        } else if (Array.isArray(lastMessage.content)) {
+          lastMessage.content.push(
+            { type: "input_audio", input_audio: { data: audioData.base64, format: "wav" } }
+          );
         }
       }
     }
+
 
     let completion: any = null;
     let retries = 3;

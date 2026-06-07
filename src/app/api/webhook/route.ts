@@ -498,7 +498,7 @@ export async function POST(request: NextRequest) {
     // Check if the AI's response is the founder response to attach the photo
     let mediaUrl: string | undefined = undefined;
     if (replyText.includes("Nikhil") || replyText.includes("நிகில்") || replyText.includes("निखिल") || replyText.includes("నిఖిల్") || replyText.includes("നിഖിൽ")) {
-       mediaUrl = "https://vgn-fairmont-bot.vercel.app/founder.jpg";
+       mediaUrl = "https://vgn-fairmont-bot.vercel.app/founder.png";
     }
 
     // Send response via WhatsApp

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead, sendWhatsAppTypingIndicator } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
@@ -147,9 +147,8 @@ export async function POST(request: NextRequest) {
   const name = contact?.profile?.name || null;
   const whatsappMsgId = message.id;
 
-  // Immediately mark as read and show typing indicator (fire and forget)
+  // Immediately mark as read (fire and forget)
   markWhatsAppMessageRead(whatsappMsgId);
-  sendWhatsAppTypingIndicator(phone);
 
   try {
     // Find or create conversation
@@ -212,14 +211,16 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "duplicate" });
     }
 
-    // Update conversation timestamp
-    await supabase
+    // Update conversation timestamp (async)
+    const pendingPromises: Promise<any>[] = [];
+    pendingPromises.push(supabase
       .from("conversations")
       .update({ updated_at: new Date().toISOString() })
-      .eq("id", conversation.id);
+      .eq("id", conversation.id));
 
     // If mode is 'human', don't auto-reply
     if (conversation.mode === "human") {
+      await Promise.allSettled(pendingPromises);
       return Response.json({ status: "stored_for_human" });
     }
 
@@ -514,18 +515,20 @@ export async function POST(request: NextRequest) {
     // Send response via WhatsApp
     await sendWhatsAppMessage(phone, replyText);
 
-    // Store AI response
-    await supabase.from("messages").insert({
+    // Store AI response and update timestamp (async)
+    pendingPromises.push(supabase.from("messages").insert({
       conversation_id: conversation.id,
       role: "assistant",
       content: replyText,
-    });
+    }));
 
-    // Update conversation timestamp again
-    await supabase
+    pendingPromises.push(supabase
       .from("conversations")
       .update({ updated_at: new Date().toISOString() })
-      .eq("id", conversation.id);
+      .eq("id", conversation.id));
+
+    // Await all background DB writes before freezing the serverless function
+    await Promise.allSettled(pendingPromises);
 
     return Response.json({ status: "replied" });
   } catch (error) {

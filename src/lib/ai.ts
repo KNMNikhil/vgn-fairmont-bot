@@ -90,13 +90,13 @@ export async function getAIResponse(
       }
     }
 
-    // Option B: 15-second hard timeout for the AI call
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 15000)
-    );
-
-    const completionPromise = openai.chat.completions.create({
-      model: isGemini ? "gemini-2.5-flash" : "anthropic/claude-sonnet-4-20250514",
+    let completion: any = null;
+    let retries = 3;
+    
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        completion = await openai.chat.completions.create({
+          model: isGemini ? "gemini-2.5-flash" : "anthropic/claude-sonnet-4-20250514",
       messages: formattedMessages,
       temperature: 0.2,
       max_tokens: 1000,
@@ -283,8 +283,14 @@ export async function getAIResponse(
       ],
       tool_choice: "auto"
     });
-
-    const completion = await Promise.race([completionPromise, timeoutPromise]) as any;
+        break; // Success
+      } catch (err) {
+        console.error(`AI Attempt ${attempt} failed:`, err);
+        if (attempt === retries) throw err;
+        // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 500));
+      }
+    }
 
     const message = completion.choices[0]?.message;
     console.log("Raw AI Message:", JSON.stringify(message, null, 2));
@@ -315,13 +321,10 @@ export async function getAIResponse(
       };
     }
 
-    return { text: message?.content || `DEBUG - AI returned empty content. Raw message: ${JSON.stringify(message)}` };
+    return { text: message?.content || "" };
   } catch (error) {
-    if (error instanceof Error && error.message === "AI_TIMEOUT_EXCEEDED") {
-      console.error("AI Generation Error: 15-second timeout exceeded");
-      return { text: "I'm experiencing delays reaching my brain! Please give me a minute and try again." };
-    }
-    console.error("AI Generation Error:", error);
-    return { text: "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!" };
+    console.error("AI Generation Critical Error (All Retries Failed):", error);
+    // Return empty string so the webhook drops the message silently instead of spamming the user
+    return { text: "" };
   }
 }

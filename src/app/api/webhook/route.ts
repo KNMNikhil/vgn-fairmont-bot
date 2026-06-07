@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead, sendWhatsAppTypingIndicator } from "@/lib/whatsapp";
 import { getAIResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
@@ -146,6 +146,10 @@ export async function POST(request: NextRequest) {
   
   const name = contact?.profile?.name || null;
   const whatsappMsgId = message.id;
+
+  // Immediately mark as read and show typing indicator (fire and forget)
+  markWhatsAppMessageRead(whatsappMsgId);
+  sendWhatsAppTypingIndicator(phone);
 
   try {
     // Find or create conversation
@@ -500,6 +504,11 @@ export async function POST(request: NextRequest) {
       }
     } else {
       replyText = aiResponse.text;
+    }
+
+    if (!replyText || replyText.trim() === "") {
+      console.log("No reply text generated, dropping silently.");
+      return Response.json({ status: "dropped_silently" });
     }
 
     // Send response via WhatsApp

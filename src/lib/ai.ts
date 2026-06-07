@@ -90,7 +90,12 @@ export async function getAIResponse(
       }
     }
 
-    const completion = await openai.chat.completions.create({
+    // Option B: 15-second hard timeout for the AI call
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 15000)
+    );
+
+    const completionPromise = openai.chat.completions.create({
       model: isGemini ? "gemini-2.5-flash" : "anthropic/claude-sonnet-4-20250514",
       messages: formattedMessages,
       temperature: 0.2,
@@ -279,6 +284,8 @@ export async function getAIResponse(
       tool_choice: "auto"
     });
 
+    const completion = await Promise.race([completionPromise, timeoutPromise]) as any;
+
     const message = completion.choices[0]?.message;
     console.log("Raw AI Message:", JSON.stringify(message, null, 2));
 
@@ -310,6 +317,10 @@ export async function getAIResponse(
 
     return { text: message?.content || `DEBUG - AI returned empty content. Raw message: ${JSON.stringify(message)}` };
   } catch (error) {
+    if (error instanceof Error && error.message === "AI_TIMEOUT_EXCEEDED") {
+      console.error("AI Generation Error: 15-second timeout exceeded");
+      return { text: "I'm experiencing delays reaching my brain! Please give me a minute and try again." };
+    }
     console.error("AI Generation Error:", error);
     return { text: "I am currently experiencing a very high volume of requests from the community. Please wait a few seconds and try asking me again!" };
   }

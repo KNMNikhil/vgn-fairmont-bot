@@ -1,0 +1,18 @@
+
+> whatsapp-temp@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.68.104:3002
+- Environments: .env.local
+✓ Ready in 508ms
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          18271
+- Dir:          /Users/nagesh/.gemini/antigravity-ide/scratch/VGN_Fairmont_Bots/nextjs-agent
+- Log:          .next/dev/logs/next-development.log
+
+Run kill 18271 to stop it.
+[?25h

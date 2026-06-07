@@ -126,20 +126,42 @@ export async function POST(request: NextRequest) {
 
   try {
     // Find or create conversation
-    let { data: conversation } = await supabase
-      .from("conversations")
-      .select("*")
-      .eq("phone", phone)
-      .single();
-
-    if (!conversation) {
-      const { data: newConvo } = await supabase
+    let conversation;
+    try {
+      let { data: existingConvo, error: fetchError } = await supabase
         .from("conversations")
-        .insert({ phone, name })
-        .select()
+        .select("*")
+        .eq("phone", phone)
         .single();
-      conversation = newConvo;
-    } else if (name && name !== conversation.name) {
+        
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+        console.error("Supabase fetch error:", fetchError);
+        throw fetchError;
+      }
+
+      if (!existingConvo) {
+        const { data: newConvo, error: insertConvoError } = await supabase
+          .from("conversations")
+          .insert({ phone, name })
+          .select()
+          .single();
+          
+        if (insertConvoError) {
+          console.error("Supabase insert conversation error:", insertConvoError);
+          throw insertConvoError;
+        }
+        conversation = newConvo;
+      } else {
+        conversation = existingConvo;
+      }
+    } catch (err) {
+      console.error("Critical database error resolving conversation:", err);
+      // Fallback: send error message to user, return 200 so WhatsApp doesn't retry
+      await sendWhatsAppMessage(phone, "System maintenance in progress. I will be back online shortly! 🛠️");
+      return Response.json({ status: "database_error_handled" });
+    }
+
+    if (name && name !== conversation.name) {
       await supabase
         .from("conversations")
         .update({ name })
@@ -209,7 +231,8 @@ export async function POST(request: NextRequest) {
       const toolName = aiResponse.tool_call.name;
       const args = aiResponse.tool_call.args;
 
-      if (toolName === "get_current_datetime") {
+      try {
+        if (toolName === "get_current_datetime") {
         // Get current IST date and time - CORRECTED
         const now = new Date();
         
@@ -447,6 +470,10 @@ export async function POST(request: NextRequest) {
         }
       } else {
         replyText = `Hmm, I tried to use a tool called "${toolName}" but I don't know how to handle it.`;
+        }
+      } catch (toolErr) {
+        console.error(`Error executing tool ${toolName}:`, toolErr);
+        replyText = `I ran into an issue while trying to use the ${toolName.replace(/_/g, ' ')} tool. Please try again later.`;
       }
     } else {
       replyText = aiResponse.text;
@@ -470,7 +497,8 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ status: "replied" });
   } catch (error) {
-    console.error("Webhook error:", error);
-    return Response.json({ status: "error" }, { status: 500 });
+    console.error("Webhook top-level error:", error);
+    // Even on top-level crash, return 200 so Meta stops retrying. We already logged it.
+    return Response.json({ status: "error_handled_gracefully" }, { status: 200 });
   }
 }

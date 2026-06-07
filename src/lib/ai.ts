@@ -98,7 +98,7 @@ export async function getAIResponse(
 TOOL USAGE — STRICT RULES:
 NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
 For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
-Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, get_current_datetime, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote.
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
@@ -141,19 +141,11 @@ ${isAudioMessage
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         completion = await openai.chat.completions.create({
-          model: isGemini ? "gemini-2.5-flash" : "anthropic/claude-sonnet-4-20250514",
+          model: isGemini ? "gemini-2.5-pro" : "anthropic/claude-sonnet-4-20250514",
       messages: formattedMessages,
       temperature: 0.2,
       max_tokens: 1000,
       tools: [
-        {
-          type: "function",
-          function: {
-            name: "get_current_datetime",
-            description: "Get the current live date and time in IST. ONLY call this when user explicitly asks for the current time or date. DO NOT call for any other purpose.",
-            parameters: { type: "object", properties: {} }
-          }
-        },
         {
           type: "function",
           function: {
@@ -219,7 +211,7 @@ ${isAudioMessage
           function: {
             name: "get_latest_notices",
             description: "ONLY use to fetch LIVE community announcements posted by admins in the database. DO NOT use for rules, amenities, contacts, escalation matrix, swimming pool rules, parking rules, pet rules, or anything already in the knowledge base. Those must be answered from the knowledge base directly.",
-            parameters: { type: "object", properties: {} }
+            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
           }
         },
         {
@@ -243,7 +235,7 @@ ${isAudioMessage
           function: {
             name: "get_active_polls",
             description: "Fetch all active community polls that residents can vote on.",
-            parameters: { type: "object", properties: {} }
+            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
           }
         },
         {

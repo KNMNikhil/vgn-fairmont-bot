@@ -96,18 +96,24 @@ export async function getAIResponse(
       ? lastUserMsg.content 
       : (Array.isArray(lastUserMsg?.content) ? lastUserMsg.content.find((c: any) => c.type === "text")?.text : "") || "";
     
-    const detectedLangInstruction = detectLanguage(lastUserText);
+    const isAudioMessage = lastUserText === "AUDIO_MESSAGE_RECEIVED" && !!audioData;
+    const detectedLangInstruction = isAudioMessage
+      ? "DETECT FROM AUDIO: Listen to the audio in this message. Identify the spoken language. Reply 100% in that same language and script. Do NOT use Tamil just because previous messages were in Tamil. Do NOT use any other language. Match the audio's language exactly."
+      : detectLanguage(lastUserText);
     
     // Inject a hard system-level language override RIGHT BEFORE the last user message
-    // This is more powerful than appending to the user message because it's a system instruction
     const lastIdx = formattedMessages.length - 1;
     formattedMessages.splice(lastIdx, 0, {
       role: "system",
       content: `🚨 MANDATORY LANGUAGE OVERRIDE - HIGHEST PRIORITY 🚨
-The user's current message is in: ${detectedLangInstruction}
+${isAudioMessage 
+  ? `This is a VOICE MESSAGE. Listen to the audio and detect the spoken language. Reply ENTIRELY in that language.
+Do NOT reply in Tamil just because previous messages were in Tamil.
+Do NOT use any prior conversation language. USE ONLY THE LANGUAGE SPOKEN IN THE AUDIO.
+If the audio is in English, reply in English only. If in Tamil, reply in Tamil only.`
+  : `The user's current message is in: ${detectedLangInstruction}
 You MUST reply ENTIRELY in this language and script.
-DO NOT use any other script or language in your reply — not even for names or words.
-Names like "K.N.M Nikhil" must be written in the detected script.
+DO NOT use any other script or language in your reply — not even for names or words.`}
 This overrides ALL previous instructions and conversation history.
 VIOLATING THIS RULE IS A CRITICAL FAILURE.`
     });
@@ -115,17 +121,12 @@ VIOLATING THIS RULE IS A CRITICAL FAILURE.`
     if (formattedMessages.length > 0) {
       const lastMessage = formattedMessages[formattedMessages.length - 1];
       if (lastMessage.role === "user") {
-        const langSuffix = "\n\n[CRITICAL SYSTEM RULE: You MUST reply in the EXACT same language as the text above. Ignore the language of previous messages.]";
-        if (typeof lastMessage.content === "string") {
-          lastMessage.content += langSuffix;
-        } else if (Array.isArray(lastMessage.content)) {
-          lastMessage.content[0].text += langSuffix;
-        }
-        
         if (audioData) {
+          // For audio, set the text prefix to explicitly instruct language detection from audio
+          const audioTextPrefix = "[VOICE MESSAGE - Transcribe this audio, detect the language of the speech, and reply in exactly that spoken language. Ignore all previous conversation language.]: ";
           if (typeof lastMessage.content === "string") {
             lastMessage.content = [
-              { type: "text", text: lastMessage.content },
+              { type: "text", text: audioTextPrefix + lastMessage.content },
               {
                 type: "input_audio",
                 input_audio: {

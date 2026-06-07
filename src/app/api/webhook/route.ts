@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update conversation timestamp (async)
-    const pendingPromises: Promise<any>[] = [];
+    const pendingPromises: any[] = [];
     pendingPromises.push(supabase
       .from("conversations")
       .update({ updated_at: new Date().toISOString() })

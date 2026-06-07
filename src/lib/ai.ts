@@ -11,6 +11,41 @@ const openai = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
 });
 
+/**
+ * Detects the primary language/script of a text string based on Unicode ranges.
+ * Returns a human-readable language name with script requirement.
+ */
+function detectLanguage(text: string): string {
+  if (!text || typeof text !== "string") return "English";
+  
+  // Count characters per script
+  const tamilChars = (text.match(/[\u0B80-\u0BFF]/g) || []).length;
+  const devanagariChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+  const teluguChars = (text.match(/[\u0C00-\u0C7F]/g) || []).length;
+  const malayalamChars = (text.match(/[\u0D00-\u0D7F]/g) || []).length;
+  const kannadaChars = (text.match(/[\u0C80-\u0CFF]/g) || []).length;
+  const arabicChars = (text.match(/[\u0600-\u06FF]/g) || []).length;
+  
+  const scores: [number, string, string][] = [
+    [tamilChars, "Tamil", "Tamil script (தமிழ்) only - NO Devanagari, NO English, NO other scripts"],
+    [devanagariChars, "Hindi", "Hindi Devanagari script (हिंदी) only - NO Tamil, NO English, NO other scripts"],
+    [teluguChars, "Telugu", "Telugu script (తెలుగు) only"],
+    [malayalamChars, "Malayalam", "Malayalam script (മലയാളം) only"],
+    [kannadaChars, "Kannada", "Kannada script (ಕನ್ನಡ) only"],
+    [arabicChars, "Arabic", "Arabic script only"],
+  ];
+  
+  // Sort by score descending
+  scores.sort((a, b) => b[0] - a[0]);
+  
+  // If any non-Latin script has significant presence, use it
+  if (scores[0][0] > 0) {
+    return scores[0][2]; // Return the full instruction string
+  }
+  
+  return "English - ONLY English language, NO Tamil, NO Hindi, NO other languages";
+}
+
 export async function getAIResponse(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: { role: "user" | "assistant"; content: any }[],
@@ -54,6 +89,28 @@ export async function getAIResponse(
       },
       ...messages,
     ];
+
+    // Detect language of the last user message programmatically
+    const lastUserMsg = [...messages].reverse().find(m => m.role === "user");
+    const lastUserText = typeof lastUserMsg?.content === "string" 
+      ? lastUserMsg.content 
+      : (Array.isArray(lastUserMsg?.content) ? lastUserMsg.content.find((c: any) => c.type === "text")?.text : "") || "";
+    
+    const detectedLangInstruction = detectLanguage(lastUserText);
+    
+    // Inject a hard system-level language override RIGHT BEFORE the last user message
+    // This is more powerful than appending to the user message because it's a system instruction
+    const lastIdx = formattedMessages.length - 1;
+    formattedMessages.splice(lastIdx, 0, {
+      role: "system",
+      content: `🚨 MANDATORY LANGUAGE OVERRIDE - HIGHEST PRIORITY 🚨
+The user's current message is in: ${detectedLangInstruction}
+You MUST reply ENTIRELY in this language and script.
+DO NOT use any other script or language in your reply — not even for names or words.
+Names like "K.N.M Nikhil" must be written in the detected script.
+This overrides ALL previous instructions and conversation history.
+VIOLATING THIS RULE IS A CRITICAL FAILURE.`
+    });
 
     if (formattedMessages.length > 0) {
       const lastMessage = formattedMessages[formattedMessages.length - 1];

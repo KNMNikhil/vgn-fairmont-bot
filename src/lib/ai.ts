@@ -175,6 +175,14 @@ ${isAudioMessage
         {
           type: "function",
           function: {
+            name: "get_current_datetime",
+            description: "Get the current date and time in IST (Indian Standard Time). MUST be called when user asks about current date, time, today's date, or what time it is.",
+            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "create_ticket",
             description: "Create a maintenance or complaint ticket. Use when a resident reports an issue.",
             parameters: {

@@ -264,7 +264,24 @@ export async function POST(request: NextRequest) {
       const args = aiResponse.tool_call.args;
 
       try {
-        if (toolName === "route_shop_order") {
+        if (toolName === "get_current_datetime") {
+          const now = new Date();
+          const dateStr = now.toLocaleDateString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+          const timeStr = now.toLocaleTimeString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+          });
+          replyText = `📅 Today is ${dateStr}\n🕐 Current time is ${timeStr} IST`;
+        } else if (toolName === "route_shop_order") {
         const targetPhone = args.shop_type === "fruits_shop" 
           ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
           : (process.env.IRON_SHOP_NUMBER || "919677197402");

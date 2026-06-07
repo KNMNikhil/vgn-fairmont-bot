@@ -19,11 +19,26 @@ export async function markWhatsAppMessageRead(messageId: string) {
 
 
 
-export async function sendWhatsAppMessage(to: string, body: string, retries = 3) {
+export async function sendWhatsAppMessage(to: string, body: string, mediaUrl?: string, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+      const payload = mediaUrl ? {
+        messaging_product: "whatsapp",
+        to,
+        type: "image",
+        image: {
+          link: mediaUrl,
+          caption: body
+        }
+      } : {
+        messaging_product: "whatsapp",
+        to,
+        type: "text",
+        text: { body },
+      };
 
       const res = await fetch(
         `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`,
@@ -33,12 +48,7 @@ export async function sendWhatsAppMessage(to: string, body: string, retries = 3)
             Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to,
-            type: "text",
-            text: { body },
-          }),
+          body: JSON.stringify(payload),
           signal: controller.signal,
         }
       );

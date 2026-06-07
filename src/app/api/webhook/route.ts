@@ -495,8 +495,14 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "dropped_silently" });
     }
 
+    // Check if the AI's response is the founder response to attach the photo
+    let mediaUrl: string | undefined = undefined;
+    if (replyText.includes("Nikhil") || replyText.includes("நிகில்") || replyText.includes("निखिल") || replyText.includes("నిఖిల్") || replyText.includes("നിഖിൽ")) {
+       mediaUrl = "https://vgn-fairmont-bot.vercel.app/founder.jpg";
+    }
+
     // Send response via WhatsApp
-    await sendWhatsAppMessage(phone, replyText);
+    await sendWhatsAppMessage(phone, replyText, mediaUrl);
 
     // Store AI response and update timestamp (async)
     pendingPromises.push(supabase.from("messages").insert({

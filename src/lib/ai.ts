@@ -87,6 +87,14 @@ export async function getAIResponse(
         role: "system",
         content: COMMUNITY_SYSTEM_PROMPT + timeContext,
       },
+      {
+        role: "system",
+        content: `TOOL USAGE RULES — CRITICAL:
+NEVER call any tool to answer questions about: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or any other information already in the knowledge base above.
+For ALL of these questions, read the knowledge base and reply DIRECTLY.
+Tools are ONLY for: creating tickets, checking ticket status, getting live notices, routing shop orders, getting current time, RSVPing to events, fetching polls.
+If you call a tool for something that is already in the knowledge base, that is a CRITICAL ERROR.`
+      },
       ...messages,
     ];
 
@@ -163,7 +171,7 @@ VIOLATING THIS RULE IS A CRITICAL FAILURE.`
           type: "function",
           function: {
             name: "get_current_datetime",
-            description: "Get the current date and time in IST. MUST be called when user asks 'what time is it', 'what is the date', 'current time', 'today's date', or any variation of current date/time query.",
+            description: "Get the current live date and time in IST. ONLY call this when user explicitly asks for the current time or date. DO NOT call for any other purpose.",
             parameters: { type: "object", properties: {} }
           }
         },
@@ -231,7 +239,7 @@ VIOLATING THIS RULE IS A CRITICAL FAILURE.`
           type: "function",
           function: {
             name: "get_latest_notices",
-            description: "Fetch the latest community announcements and notices.",
+            description: "ONLY use to fetch LIVE community announcements posted by admins in the database. DO NOT use for rules, amenities, contacts, escalation matrix, swimming pool rules, parking rules, pet rules, or anything already in the knowledge base. Those must be answered from the knowledge base directly.",
             parameters: { type: "object", properties: {} }
           }
         },
@@ -263,7 +271,7 @@ VIOLATING THIS RULE IS A CRITICAL FAILURE.`
           type: "function",
           function: {
             name: "get_upcoming_events",
-            description: "Get upcoming community events. Use when user asks about events, celebrations, activities, or what's happening in the community.",
+            description: "ONLY use to fetch LIVE upcoming events from the database that were created dynamically. DO NOT use for general community rules, amenities, contacts, or knowledge base info.",
             parameters: {
               type: "object",
               properties: {

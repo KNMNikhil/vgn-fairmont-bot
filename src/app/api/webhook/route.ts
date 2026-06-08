@@ -501,7 +501,7 @@ export async function POST(request: NextRequest) {
           console.error("Ticket error:", error);
           replyText = "Sorry, I couldn't log your ticket right now. Please try again later.";
         } else {
-          replyText = `Your ticket has been logged successfully! 🎫\n\n*Ticket Details:*\nTicket ID: ${data.id.split('-')[0]}\nPriority: ${priorityEmoji} ${priorityLabel}\nStatus: Open\n📅 Logged on: ${ticketDateTime} IST\n\n${priority === 'red' ? '🚨 This is marked URGENT and the team has been alerted immediately!' : priority === 'yellow' ? '🔧 This will be addressed by the maintenance team soon.' : '✅ We have received your feedback and will look into it.'}`;
+          replyText = `Your ticket has been logged successfully! 🎫\n\n*Ticket Details:*\nTicket ID: ${data.id.split('-')[0]}\nIssue/Reason: ${args.description}\nPriority: ${priorityEmoji} ${priorityLabel}\nStatus: Open\n📅 Logged on: ${ticketDateTime} IST\n\n${priority === 'red' ? '🚨 This is marked URGENT and the team has been alerted immediately!' : priority === 'yellow' ? '🔧 This will be addressed by the maintenance team soon.' : '✅ We have received your feedback and will look into it.'}`;
         }
       } else if (toolName === "check_ticket_status") {
         const { data, error } = await supabase.from("tickets")

@@ -1,7 +1,11 @@
 {
   "community_info": {
     "name": "VGN Fairmont",
-    "developer": "VGN Projects Estates Private Limited",
+    "developer": "VGN Projects Estates Private Limited (Established 1942)",
+    "head_office": "Y-222, VGN Kimberly Towers, 2nd Avenue, Anna Nagar, Chennai - 600 040",
+    "sales_enquiry": "044 - 4343 9999",
+    "website": "www.vgn.in",
+    "rera_number": "TN/29/BUILDING/0280/2020",
     "architect": "Designed by Singapore architect DPA",
     "description": "A premium, ready-to-move gated community spanning 10.46 acres with 70% open space.",
     "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
@@ -15,8 +19,8 @@
     "piped_gas_roll_out": "VGN Fairmont will be a fully functional Piped gas only community. Option 1: Safe Custody mode (temporary surrender without disconnection). Option 2: Surrender the current connection."
   },
   "connectivity_and_location": {
-    "transit": "Less than a 10-minute walk (500m) to Ekkattuthangal Metro Station and Kathipara Flyover/Junction. Immediate access to the Airport, Koyambedu, and arterial city roads.",
-    "neighborhood": "Proximate to major IT corridors, premium hotels like ITC Grand Chola and Hilton, and malls like Phoenix MarketCity and Forum Vijaya."
+    "transit": "500m to Ekkattuthangal Metro Station. 1km to Kathipara Junction and IT Tech Park. 8km to Airport. Connected via Suburban Trains and Buses.",
+    "neighborhood": "Hilton Luxury Hotel (1km), ITC Grand Chola (2km), PSBB Millennium School (2km), Ashok Pillar (2km), Theatres (2km), PSBB School (2.5km), Jawahar Vidyalaya School (2.8km), Saidapet (3km), Nexus Mall (4km), IIT Madras (4km), Adyar (5km), T.Nagar (5km)."
   },
 
   "amenities": {
@@ -108,14 +112,14 @@
       "features": "10.46 acres total spanning with 70% open space | Green space | Seating areas | Walking paths"
     },
     "clubhouse": {
-      "size": "40,000 sq. ft.",
-      "features": "Fully air-conditioned (ASHRAE standards) | Indoor forest lounge with waterfalls"
+      "size": "40,000 sq. ft. world-class clubhouse",
+      "features": "Fully air-conditioned as per ASHRAE standards | Indoor forest lounge with waterfalls, birds, and lush greenery | Banquet Halls for special occasions | Oxygen Recharge vents providing fresh oxygen as per ASHRAE Standards."
     },
     "recreation_facilities": {
-      "facilities": "Rooftop infinity pool | Fitness center | Private mini-theaters | Badminton courts"
+      "facilities": "Rooftop infinity pool on a 14 floor tower with skyline views | State-of-the-art Fitness center | Private mini-theatres with Dolby Surround Sound | Floodlit Badminton courts with Olympic Grade court flooring | Barbeque Deck for food and friends | Yoga Deck."
     },
     "convenience_facilities": {
-      "facilities": "Departmental store | ATM centers | Power backup (100% for lifts and essential services)"
+      "facilities": "Departmental store | ATM centers | Pharmacy | STP & Water Softening Plant with state-of-the-art recycling for 24x7 water supply | Piped Gas (24x7 with outdoor cylinder storage) | Power backup: 300 watts for Compact 2 BHK, 500 watts for 2 BHK, 800 watts for 3 BHK, 1000 watts for 4 BHK & above. 50% backup for common areas/clubhouse (excluding ACs), 100% for lifts, STP, and WTP."
     }
   },
 

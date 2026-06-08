@@ -94,7 +94,7 @@ export async function getAIResponse(
 TOOL USAGE — STRICT RULES:
 NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
 For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
-Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats.
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
@@ -208,6 +208,14 @@ ${isAudioMessage
               },
               required: ["ticket_id"]
             }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_user_stats",
+            description: "Fetch the total count of tickets and orders placed by the current user.",
+            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
           }
         },
         {

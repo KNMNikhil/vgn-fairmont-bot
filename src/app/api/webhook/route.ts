@@ -384,6 +384,13 @@ export async function POST(request: NextRequest) {
             replyText = `⚠️ I tried to send your order, but the ${args.shop_type.replace("_", " ")} owner's WhatsApp window is closed. They need to message me first so I can forward your orders!`;
           } else {
             replyText = `✅ Your order has been placed!\n\n📦 *Order Details:*\nItem: ${args.item}\nFlat: ${args.flat_number}\nShop: ${args.shop_type.replace("_", " ").toUpperCase()}\n📅 Date & Time: ${orderDateTime} IST\n\nThe shop will deliver it soon!`;
+            // Insert into orders table to track
+            await supabase.from("orders").insert({
+              phone,
+              shop_type: args.shop_type,
+              item: args.item,
+              flat_number: args.flat_number
+            });
           }
         } else {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
@@ -441,6 +448,21 @@ export async function POST(request: NextRequest) {
           replyText = `I couldn't find a ticket with ID "${args.ticket_id}".`;
         } else {
           replyText = `*Ticket Status* 🎫\n*ID:* ${data.id.split('-')[0]}\n*Issue:* ${data.description}\n*Status:* ${data.status.toUpperCase()}\n*Logged:* ${new Date(data.created_at).toLocaleDateString()}`;
+        }
+      } else if (toolName === "get_user_stats") {
+        const { count: ticketCount, error: ticketError } = await supabase.from("tickets")
+          .select('*', { count: 'exact', head: true })
+          .eq("phone", phone);
+          
+        const { count: orderCount, error: orderError } = await supabase.from("orders")
+          .select('*', { count: 'exact', head: true })
+          .eq("phone", phone);
+
+        if (ticketError || orderError) {
+          console.error("Stats fetch error:", ticketError, orderError);
+          replyText = "Sorry, I couldn't fetch your statistics right now. Please try again later.";
+        } else {
+          replyText = `📊 *Your Activity Stats:*\n\n🎫 Tickets Raised: ${ticketCount || 0}\n📦 Orders Placed: ${orderCount || 0}\n\nThank you for being an active resident!`;
         }
       } else if (toolName === "get_latest_notices") {
         const { data, error } = await supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(3);

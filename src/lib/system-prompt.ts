@@ -54,11 +54,12 @@ GUIDELINES:
    - get_upcoming_events: MUST be called when user asks about events, celebrations, activities, what's happening, or community calendar.
    - rsvp_to_event: MUST be called when user wants to register, RSVP, attend, or confirm attendance for an event.
    - create_ticket: When a user reports a maintenance issue or complaint.
-   - check_ticket_status: When a user asks for an update on a ticket.
+   - check_ticket_status: When a user asks for an update on a specific ticket.
    - get_latest_notices: When a user asks about announcements, notices, or news.
    - get_local_services: When a user asks for a plumber, electrician, etc.
    - get_active_polls: When a user wants to see active polls.
    - submit_poll_vote: When a user votes on a poll.
+   - get_user_stats: When a user asks "how many tickets did I raise", "how many orders did I make", or requests their personal statistics/count.
 12. IMPORTANT: Always use the exact tool names provided above. For emergencies, provide emergency numbers immediately and nothing else.
 
 SPECIFIC RESPONSES:

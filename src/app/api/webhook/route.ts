@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
 
   const isPollResponse = message.type === "interactive" && message.interactive?.type === "button_reply";
   const isEventResponse = message.type === "interactive" && message.interactive?.type === "event_rsvp";
+  const isFeedbackPoll = isPollResponse && message.interactive?.button_reply?.id?.startsWith('feedback_');
   
   let text = "";
   if (isAudio) {
@@ -100,6 +101,32 @@ export async function POST(request: NextRequest) {
     }
     
     return Response.json({ status: "event_rsvp_acknowledged" });
+  } else  if (isFeedbackPoll) {
+    // Handle satisfaction feedback poll response (format: feedback_TICKETID_RATING)
+    const buttonReply = message.interactive?.button_reply;
+    const buttonId = buttonReply?.id || '';
+    const parts = buttonId.split('_');
+    const ticketId = parts[1];
+    const rating = parseInt(parts[2] || '0');
+
+    // Store the rating in the ticket
+    await supabase.from('tickets')
+      .update({ feedback_rating: rating })
+      .ilike('id', `${ticketId}%`);
+
+    if (rating <= 2) {
+      // Low rating — ask why
+      await sendWhatsAppMessage(phone, `We're really sorry to hear that! 😔 Could you tell us what went wrong so we can improve? Your feedback helps us serve you better. 🙏`);
+      // Store a pending feedback_comment marker so next message is captured as comment
+      await supabase.from('tickets')
+        .update({ feedback_comment: 'PENDING' })
+        .ilike('id', `${ticketId}%`);
+    } else if (rating === 3) {
+      await sendWhatsAppMessage(phone, `Thank you for your feedback! ⭐⭐⭐ We'll keep working to improve our service. 🙏`);
+    } else {
+      await sendWhatsAppMessage(phone, `Thank you for your kind feedback! ${rating === 5 ? '⭐⭐⭐⭐⭐ Excellent!' : '⭐⭐⭐⭐ Great!'} We're glad we could help. 😊`);
+    }
+    return Response.json({ status: 'feedback_recorded' });
   } else if (isPollResponse) {
     // Handle poll/RSVP button response
     const buttonReply = message.interactive?.button_reply;
@@ -247,6 +274,24 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "duplicate" });
     }
 
+    // Check if user has a pending feedback comment request
+    if (text) {
+      const { data: pendingTicket } = await supabase.from("tickets")
+        .select("id")
+        .eq("phone", phone)
+        .eq("feedback_comment", "PENDING")
+        .single();
+        
+      if (pendingTicket) {
+        await supabase.from("tickets")
+          .update({ feedback_comment: text })
+          .eq("id", pendingTicket.id);
+          
+        await sendWhatsAppMessage(phone, "Thank you for the details. We have noted this down and the management will review it. 🙏");
+        return Response.json({ status: "feedback_comment_saved" });
+      }
+    }
+
     // Update conversation timestamp (async)
     const pendingPromises: any[] = [];
     pendingPromises.push(supabase
@@ -344,7 +389,7 @@ export async function POST(request: NextRequest) {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
         }
       } else if (toolName === "create_ticket") {
-        // Get current IST date and time for ticket - CORRECTED
+        // Get current IST date and time for ticket
         const now = new Date();
         const ticketDateTime = now.toLocaleString('en-US', { 
           timeZone: 'Asia/Kolkata',
@@ -356,16 +401,36 @@ export async function POST(request: NextRequest) {
           hour12: true
         });
 
+        // Smart ticket priority classification
+        const descLower = (args.description || '').toLowerCase();
+        let priority = 'green';
+        let priorityEmoji = '🟢';
+        let priorityLabel = 'Low Priority';
+
+        const redKeywords = ['lift', 'elevator', 'water leak', 'gas leak', 'fire', 'flood', 'safety', 'power failure', 'electric shock', 'electrical hazard', 'short circuit', 'burst pipe', 'emergency', 'danger', 'accident', 'injury', 'sewage overflow', 'generator failure'];
+        const yellowKeywords = ['door', 'lock', 'paint', 'painting', 'plumb', 'ac ', 'air condition', 'noise', 'fan', 'light', 'bulb', 'window', 'seepage', 'damp', 'crack', 'repair', 'broken', 'not working', 'wifi', 'internet', 'cctv', 'intercom'];
+
+        if (redKeywords.some(kw => descLower.includes(kw))) {
+          priority = 'red';
+          priorityEmoji = '🔴';
+          priorityLabel = 'URGENT';
+        } else if (yellowKeywords.some(kw => descLower.includes(kw))) {
+          priority = 'yellow';
+          priorityEmoji = '🟡';
+          priorityLabel = 'Medium Priority';
+        }
+
         const { data, error } = await supabase.from("tickets").insert({
           phone,
           description: args.description,
-          status: 'open'
+          status: 'open',
+          priority
         }).select().single();
         if (error) {
           console.error("Ticket error:", error);
           replyText = "Sorry, I couldn't log your ticket right now. Please try again later.";
         } else {
-          replyText = `Your ticket has been logged successfully! 🎫\n\n*Ticket Details:*\nTicket ID: ${data.id.split('-')[0]}\nStatus: Open\n📅 Logged on: ${ticketDateTime} IST\n\nWe will look into it soon.`;
+          replyText = `Your ticket has been logged successfully! 🎫\n\n*Ticket Details:*\nTicket ID: ${data.id.split('-')[0]}\nPriority: ${priorityEmoji} ${priorityLabel}\nStatus: Open\n📅 Logged on: ${ticketDateTime} IST\n\n${priority === 'red' ? '🚨 This is marked URGENT and the team has been alerted immediately!' : priority === 'yellow' ? '🔧 This will be addressed by the maintenance team soon.' : '✅ We have received your feedback and will look into it.'}`;
         }
       } else if (toolName === "check_ticket_status") {
         const { data, error } = await supabase.from("tickets")

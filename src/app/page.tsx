@@ -90,6 +90,19 @@ export default function Dashboard() {
     );
   }
 
+  async function toggleBlock() {
+    if (!selected) return;
+    const newBlockState = !selected.is_blocked;
+    await fetch(`/api/conversations/${selected.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_blocked: newBlockState }),
+    });
+    setConversations((prev) =>
+      prev.map((c) => (c.id === selected.id ? { ...c, is_blocked: newBlockState } : c))
+    );
+  }
+
   async function handleSend() {
     if (!input.trim() || !selectedId || sending) return;
     setSending(true);
@@ -163,7 +176,7 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-medium text-white/90 truncate">
+                      <span className={`text-sm font-medium ${convo.is_blocked ? "text-red-400 line-through" : "text-white/90"} truncate`}>
                         {convo.name || convo.phone}
                       </span>
                       <span className="text-[10px] text-white/30 flex-shrink-0">
@@ -223,17 +236,29 @@ export default function Dashboard() {
                   <p className="text-xs text-white/40 leading-tight mt-0.5">{selected.phone}</p>
                 </div>
               </div>
-              <button
-                onClick={toggleMode}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                  selected.mode === "agent"
-                    ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/20"
-                    : "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/20"
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${selected.mode === "agent" ? "bg-emerald-400" : "bg-amber-400"}`} />
-                {selected.mode === "agent" ? "AI Mode" : "Human Mode"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={toggleBlock}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    selected.is_blocked
+                      ? "bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/20"
+                      : "bg-white/5 text-white/60 hover:bg-white/10 border border-white/10"
+                  }`}
+                >
+                  {selected.is_blocked ? "Unblock User" : "Block User"}
+                </button>
+                <button
+                  onClick={toggleMode}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                    selected.mode === "agent"
+                      ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/20"
+                      : "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 border border-amber-500/20"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${selected.mode === "agent" ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  {selected.mode === "agent" ? "AI Mode" : "Human Mode"}
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
@@ -282,12 +307,13 @@ export default function Dashboard() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-transparent text-sm text-white/90 placeholder:text-white/25 focus:outline-none"
+                  placeholder={selected.is_blocked ? "User is blocked" : "Type a message..."}
+                  disabled={selected.is_blocked}
+                  className="flex-1 bg-transparent text-sm text-white/90 placeholder:text-white/25 focus:outline-none disabled:opacity-50"
                 />
                 <button
                   onClick={handleSend}
-                  disabled={sending || !input.trim()}
+                  disabled={sending || !input.trim() || selected.is_blocked}
                   className="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 flex items-center justify-center flex-shrink-0"
                   aria-label="Send"
                 >

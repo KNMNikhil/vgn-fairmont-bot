@@ -12,9 +12,13 @@ export async function PATCH(
     return Response.json({ error: "Invalid mode" }, { status: 400 });
   }
 
+  const updates: any = {};
+  if (body.mode !== undefined) updates.mode = body.mode;
+  if (body.is_blocked !== undefined) updates.is_blocked = body.is_blocked;
+
   const { data, error } = await supabase
     .from("conversations")
-    .update({ mode: body.mode })
+    .update(updates)
     .eq("id", id)
     .select()
     .single();

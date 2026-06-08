@@ -154,6 +154,32 @@ export async function POST(request: NextRequest) {
   // Immediately mark as read (fire and forget)
   markWhatsAppMessageRead(whatsappMsgId);
 
+  // Check for unparliamentary language
+  if (text) {
+    const unparliamentaryWords = ["idiot", "fool", "stupid", "dumb", "fuck", "shit", "bitch", "bastard", "asshole", "moron", "jerk", "shut up"];
+    const lowerText = text.toLowerCase();
+    let detectedWord = null;
+    
+    for (const word of unparliamentaryWords) {
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
+      if (regex.test(lowerText)) {
+        detectedWord = word;
+        break;
+      }
+    }
+
+    if (detectedWord) {
+      // Send alert to admin
+      const adminPhone = process.env.ADMIN_PHONE_NUMBER || "918056240206"; // User specified admin number
+      const alertMessage = `🚨 *SECURITY ALERT* 🚨\n\nUnparliamentary language detected in VGN Fairmont Bot!\n\n*Phone Number:* ${phone}\n*Name:* ${name || "Unknown"}\n*Word Used:* "${detectedWord}"\n*Full Message:* "${text}"`;
+      
+      // Fire and forget alert
+      sendWhatsAppMessage(adminPhone, alertMessage).catch(err => console.error("Failed to send admin alert:", err));
+      
+      // We will still let the AI process the message, as the system prompt has specific instructions for disrespectful queries.
+    }
+  }
+
   try {
     // Find or create conversation
     let conversation;
@@ -200,6 +226,12 @@ export async function POST(request: NextRequest) {
 
     if (!conversation) {
       return Response.json({ error: "Failed to create conversation" }, { status: 500 });
+    }
+
+    if (conversation.is_blocked) {
+      // Send a final message to the user that they are blocked, as requested
+      await sendWhatsAppMessage(phone, "You have been blocked from using this bot.");
+      return Response.json({ status: "blocked_user" });
     }
 
     // Store user message (ignore duplicates)

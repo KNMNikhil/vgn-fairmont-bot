@@ -1,13 +1,22 @@
 {
   "community_info": {
     "name": "VGN Fairmont",
-    "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu",
+    "developer": "VGN Projects Estates Private Limited",
+    "architect": "Designed by Singapore architect DPA",
+    "description": "A premium, ready-to-move gated community spanning 10.46 acres with 70% open space.",
+    "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
     "address": "VGN Fairmont, Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
-    "total_units": "800",
-    "blocks_info": "Totally 7 blocks: B1, B2, B3, B4, B5, B6 (3 and 4BHKs) and D Block (1 and 2 BHK flats, 200 flats total).",
-    "total_residents": "500",
-    "established": "2020",
+    "status": "Ready to Move (Completion Certificate Received)",
+    "established": "August 2020 (Launch Date)",
+    "total_units": "1,559 luxury apartments",
+    "blocks_info": "Six 14-story towers (Also includes B1-B6 and D Block as per internal phasing).",
+    "units_and_configuration": "Compact 2 BHK (634–647 sq. ft.), Regular 2 BHK, 3 BHK, 4 BHK, and 5 BHK Duplexes (up to 3,598 sq. ft.)",
+    "pricing": "Ranges from approximately ₹73.57 Lakhs for compact units up to ₹3.10+ Crores for premium duplexes.",
     "piped_gas_roll_out": "VGN Fairmont will be a fully functional Piped gas only community. Option 1: Safe Custody mode (temporary surrender without disconnection). Option 2: Surrender the current connection."
+  },
+  "connectivity_and_location": {
+    "transit": "Less than a 10-minute walk (500m) to Ekkattuthangal Metro Station and Kathipara Flyover/Junction. Immediate access to the Airport, Koyambedu, and arterial city roads.",
+    "neighborhood": "Proximate to major IT corridors, premium hotels like ITC Grand Chola and Hilton, and malls like Phoenix MarketCity and Forum Vijaya."
   },
 
   "amenities": {
@@ -96,7 +105,17 @@
     "garden": {
       "location": "Central courtyard",
       "timings": "6:00 AM - 10:00 PM",
-      "features": "Green space | Seating areas | Walking paths"
+      "features": "10.46 acres total spanning with 70% open space | Green space | Seating areas | Walking paths"
+    },
+    "clubhouse": {
+      "size": "40,000 sq. ft.",
+      "features": "Fully air-conditioned (ASHRAE standards) | Indoor forest lounge with waterfalls"
+    },
+    "recreation_facilities": {
+      "facilities": "Rooftop infinity pool | Fitness center | Private mini-theaters | Badminton courts"
+    },
+    "convenience_facilities": {
+      "facilities": "Departmental store | ATM centers | Power backup (100% for lifts and essential services)"
     }
   },
 

@@ -358,7 +358,7 @@ ${isAudioMessage
                 item_name: { type: "string", description: "The name of the item being sold." },
                 description: { type: "string", description: "A short description of the item." },
                 price: { type: "string", description: "The price of the item (e.g., 'Rs. 500' or 'Free')." },
-                image_id: { type: "string", description: "The WhatsApp Image ID if the user sent an image (extract from [IMAGE_ID: <id>])." },
+                image_id: { type: "string", description: "The WhatsApp Image ID if the user sent an image. IMPORTANT: You MUST ONLY extract this from the MOST RECENT [IMAGE_ID: <id>] tag in the chat history. NEVER use an older image ID from previous messages." },
                 seller_name: { type: "string", description: "The name of the seller." }
               },
               required: ["item_name", "description", "price"]

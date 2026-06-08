@@ -29,8 +29,11 @@ export async function sendWhatsAppMessage(to: string, body: string, mediaUrl?: s
         messaging_product: "whatsapp",
         to,
         type: "image",
-        image: {
+        image: mediaUrl.startsWith("http") ? {
           link: mediaUrl,
+          caption: body
+        } : {
+          id: mediaUrl,
           caption: body
         }
       } : {

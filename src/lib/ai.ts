@@ -112,7 +112,7 @@ This is NOT the first message of the day. The user has already been greeted toda
 TOOL USAGE — STRICT RULES:
 NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
 For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
-Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats, post_classified_ad.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats, post_classified_ad, get_active_classifieds, send_classified_details.
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
@@ -357,9 +357,33 @@ ${isAudioMessage
               properties: {
                 item_name: { type: "string", description: "The name of the item being sold." },
                 description: { type: "string", description: "A short description of the item." },
-                price: { type: "string", description: "The price of the item (e.g., 'Rs. 500' or 'Free')." }
+                price: { type: "string", description: "The price of the item (e.g., 'Rs. 500' or 'Free')." },
+                image_id: { type: "string", description: "The WhatsApp Image ID if the user sent an image (extract from [IMAGE_ID: <id>])." },
+                seller_name: { type: "string", description: "The name of the seller." }
               },
               required: ["item_name", "description", "price"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "get_active_classifieds",
+            description: "Fetch all active classified ads (items for sale by residents).",
+            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "send_classified_details",
+            description: "Send the image and full details of a specific classified ad to the buyer. Call this when a buyer asks to buy or see a specific item from the active classifieds.",
+            parameters: {
+              type: "object",
+              properties: {
+                classified_id: { type: "string", description: "The UUID of the classified ad." }
+              },
+              required: ["classified_id"]
             }
           }
         }

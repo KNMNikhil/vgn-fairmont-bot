@@ -165,13 +165,20 @@ export async function POST(request: NextRequest) {
     return Response.json({ status: "poll_response_acknowledged" });
   } else {
     text = message.text?.body;
+    let imageIdString = "";
+    if (message.type === "image" && message.image?.id) {
+      imageIdString = ` [IMAGE_ID: ${message.image.id}]`;
+    }
+
     if (!text) {
-      if (message.type === "image") text = message.image?.caption || "[User sent an image]";
+      if (message.type === "image") text = (message.image?.caption || "[User sent an image]") + imageIdString;
       else if (message.type === "video") text = message.video?.caption || "[User sent a video]";
       else if (message.type === "document") text = message.document?.caption || "[User sent a document]";
       else if (message.type === "location") text = "[User sent a location]";
       else if (message.type === "sticker") text = "[User sent a sticker]";
       else text = `[User sent a ${message.type || 'unknown'} message]`;
+    } else {
+      text += imageIdString;
     }
   }
   
@@ -410,9 +417,11 @@ export async function POST(request: NextRequest) {
         // Post a classified ad
         const { data, error } = await supabase.from("classifieds").insert({
           phone,
+          seller_name: args.seller_name || name || "Resident",
           item_name: args.item_name,
           description: args.description,
           price: args.price,
+          image_id: args.image_id || null,
           status: 'active'
         }).select().single();
         
@@ -421,6 +430,34 @@ export async function POST(request: NextRequest) {
           replyText = "Sorry, I couldn't post your classified ad right now. Please try again later.";
         } else {
           replyText = `✅ Your classified ad for *${args.item_name}* has been successfully posted to the community board!\n\nPrice: ${args.price}\nDescription: ${args.description}\n\nOther residents can now contact you.`;
+        }
+      } else if (toolName === "get_active_classifieds") {
+        const { data, error } = await supabase.from("classifieds")
+          .select("id, item_name, description, price, seller_name")
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
+          
+        if (error || !data || data.length === 0) {
+          replyText = "There are currently no items for sale in the community classifieds.";
+        } else {
+          replyText = "Here are the items currently for sale:\n\n" + data.map(item => 
+            `🛒 *${item.item_name}*\n💰 Price: ${item.price}\n📝 Desc: ${item.description}\n👤 Seller: ${item.seller_name}\nID: ${item.id}\n`
+          ).join("\n");
+        }
+      } else if (toolName === "send_classified_details") {
+        const { data: item, error } = await supabase.from("classifieds")
+          .select("*")
+          .eq("id", args.classified_id)
+          .single();
+          
+        if (error || !item) {
+          replyText = "I couldn't find that classified ad. It may have been sold or removed.";
+        } else {
+          // Send message directly with image if available
+          const messageText = `🛒 *Classified Ad: ${item.item_name}*\n\n💰 *Price:* ${item.price}\n📝 *Description:* ${item.description || 'N/A'}\n👤 *Seller:* ${item.seller_name || 'Resident'}\n📞 *Contact:* +${item.phone}\n\nYou can reach out to the seller directly on their number!`;
+          
+          await sendWhatsAppMessage(phone, messageText, item.image_id || undefined);
+          replyText = `I have sent you the details and photo of the ${item.item_name} directly to your chat!`;
         }
       } else if (toolName === "create_ticket") {
         // Get current IST date and time for ticket

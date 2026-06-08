@@ -370,8 +370,8 @@ export async function POST(request: NextRequest) {
           });
           replyText = `📅 Today is ${dateStr}\n🕐 Current time is ${timeStr} IST`;
         } else if (toolName === "route_shop_order") {
-        const targetPhone = args.shop_type === "fruits_shop" 
-          ? (process.env.FRUITS_SHOP_NUMBER || "919677197402")
+        const targetPhone = args.shop_type === "supermarket" 
+          ? (process.env.SUPERMARKET_NUMBER || "919677197402")
           : (process.env.IRON_SHOP_NUMBER || "919677197402");
 
         // Get current IST date and time for order - CORRECTED
@@ -405,6 +405,22 @@ export async function POST(request: NextRequest) {
           }
         } else {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
+        }
+      } else if (toolName === "post_classified_ad") {
+        // Post a classified ad
+        const { data, error } = await supabase.from("classifieds").insert({
+          phone,
+          item_name: args.item_name,
+          description: args.description,
+          price: args.price,
+          status: 'active'
+        }).select().single();
+        
+        if (error) {
+          console.error("Classifieds error:", error);
+          replyText = "Sorry, I couldn't post your classified ad right now. Please try again later.";
+        } else {
+          replyText = `✅ Your classified ad for *${args.item_name}* has been successfully posted to the community board!\n\nPrice: ${args.price}\nDescription: ${args.description}\n\nOther residents can now contact you.`;
         }
       } else if (toolName === "create_ticket") {
         // Get current IST date and time for ticket

@@ -112,7 +112,7 @@ This is NOT the first message of the day. The user has already been greeted toda
 TOOL USAGE — STRICT RULES:
 NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
 For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
-Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats, post_classified_ad.
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
@@ -170,7 +170,7 @@ ${isAudioMessage
               properties: {
                 shop_type: {
                   type: "string",
-                  enum: ["fruits_shop", "iron_shop"],
+                  enum: ["supermarket", "iron_shop"],
                   description: "The shop to send the order to."
                 },
                 item: {
@@ -344,6 +344,22 @@ ${isAudioMessage
                 }
               },
               required: ["poll_id", "option"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "post_classified_ad",
+            description: "Post an item for sale in the community classifieds.",
+            parameters: {
+              type: "object",
+              properties: {
+                item_name: { type: "string", description: "The name of the item being sold." },
+                description: { type: "string", description: "A short description of the item." },
+                price: { type: "string", description: "The price of the item (e.g., 'Rs. 500' or 'Free')." }
+              },
+              required: ["item_name", "description", "price"]
             }
           }
         }

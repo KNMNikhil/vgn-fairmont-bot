@@ -9,6 +9,7 @@
     "architect": "Designed by Singapore architect DPA",
     "description": "A premium, ready-to-move gated community spanning 10.46 acres with 70% open space.",
     "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
+    "location_map_link": "https://www.google.com/maps/dir//VGN+Fairmont,+Guindy,+Block+B4,+78,+Parthasarathy+Koil+St,+Thiru+Vi+Ka+Industrial+Estate,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0066856,80.2196723,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a526717d150725d:0x85382a530ceca3ef!2m2!1d80.2104462!2d13.020797?entry=ttu&g_ep=EgoyMDI2MDYwMS4wIKXMDSoASAFQAw%3D%3D",
     "address": "VGN Fairmont, Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
     "status": "Ready to Move (Completion Certificate Received)",
     "established": "August 2020 (Launch Date)",
@@ -24,6 +25,7 @@
   },
 
   "amenities": {
+    "present_status_note": "Currently, ONLY the swimming pool is fully operational and open to residents. All other amenities (gym, badminton courts, mini-theatres, club house, etc.) are planned or under construction and are NOT available right now.",
     "play_area": {
       "location": "In front of D Block, near the vending machine, ground floor",
       "features": "Children's play equipment | Open play space",
@@ -130,18 +132,18 @@
       "contact": "+91-98765-11111"
     },
     "iron_shop_2": {
-      "location": "Near the play area and fruits shop, ground floor",
+      "location": "Near the play area and supermarket, ground floor",
       "description": "Second iron and laundry services shop",
       "contact": "+91-98765-22222"
     },
-    "fruits_shop": {
+    "supermarket": {
       "location": "Below and backside of B5 block, near the play area, ground floor",
-      "description": "Fresh fruits and vegetables",
+      "description": "Supermarket selling groceries, snacks, household items, beverages, dairy, and fresh produce",
       "nearby": "Close to physiotherapy clinic and second iron shop",
       "contact": "+91-98765-33333"
     },
     "physiotherapy_clinic": {
-      "location": "Below and backside of B5 block, near the fruits shop, ground floor",
+      "location": "Below and backside of B5 block, near the supermarket, ground floor",
       "description": "Physiotherapy and rehabilitation services",
       "nearby": "Next to fruits shop",
       "contact": "+91-98765-44444"

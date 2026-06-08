@@ -141,7 +141,7 @@ ${isAudioMessage
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         completion = await openai.chat.completions.create({
-          model: isGemini ? "gemini-2.5-pro" : "anthropic/claude-sonnet-4-20250514",
+          model: isGemini ? (process.env.AI_MODEL || "gemini-2.5-flash") : "anthropic/claude-sonnet-4-20250514",
       messages: formattedMessages,
       temperature: 0.2,
       max_tokens: 1000,

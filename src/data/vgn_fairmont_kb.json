@@ -168,6 +168,17 @@
       "contact": "+91-98765-77777",
       "note": "Contact for fresh coconuts and coconut water"
     },
+    "event_services": {
+      "description": "Booking for tents, chairs, catering, and event setups for private functions (e.g., marriages, housewarming) below the swimming pool or common areas.",
+      "contact_name": "[Event Manager Name]",
+      "contact_number": "+91-98765-XXXXX",
+      "pricing": {
+        "tent_rent": "[Tent Rent Amount]",
+        "chair_rent": "[Chair Rent Amount]",
+        "catering": "[Catering Details]"
+      },
+      "rules": "Prior approval from Association President required before setting up any tents in common areas."
+    },
     "maids": {
       "maid_1": {
         "name": "Lakshmi",

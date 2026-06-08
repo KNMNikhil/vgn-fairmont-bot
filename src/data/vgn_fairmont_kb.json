@@ -680,6 +680,16 @@
     "note": "Without MyGate approval, you cannot approve or deny visitor entries at the gate. Complete your registration as soon as you move in."
   },
 
+  "delivery_approval": {
+    "process": [
+      "Step 1: When a delivery boy arrives at the main gate, he must give his name to the security guard stationed at the automatic boom barrier.",
+      "Step 2: The security guard enters the delivery boy's details into the MyGate system.",
+      "Step 3: You will immediately receive a notification on your MyGate app.",
+      "Step 4: You can then approve or pre-approve the entry of the delivery boy directly through the app."
+    ],
+    "parking_rules": "Delivery personnel arriving on two-wheelers must park their vehicles outside the starting entry barrier. From there, they must walk to the respective blocks to deliver the items. Two-wheelers are not permitted inside for deliveries."
+  },
+
   "biometric_registration": {
     "what_it_is": "VGN Fairmont uses a biometric access control system (fingerprint and face ID scanner) at the ground floor entry of each block. This allows residents to enter their block without a physical key or access card.",
     "how_to_register": [

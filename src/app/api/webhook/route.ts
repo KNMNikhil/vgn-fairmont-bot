@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
     // Fetch conversation history (last 20 messages for context)
     const { data: rawHistory } = await supabase
       .from("messages")
-      .select("role, content")
+      .select("role, content, created_at")
       .eq("conversation_id", conversation.id)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -325,13 +325,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let isFirstMessageOfDay = true;
+    if (rawHistory && rawHistory.length > 1) {
+      // Current message is at index 0, previous is at index 1
+      const prevDate = new Date(rawHistory[1].created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+      const currDate = new Date(rawHistory[0].created_at).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' });
+      if (prevDate === currDate) {
+        isFirstMessageOfDay = false;
+      }
+    }
+
     // Get AI response
     const aiResponse = await getAIResponse(
       history.map((m) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
       })),
-      audioData
+      audioData,
+      isFirstMessageOfDay
     );
 
     let replyText = "";

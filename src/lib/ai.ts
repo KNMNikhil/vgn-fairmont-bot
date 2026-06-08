@@ -45,7 +45,8 @@ function detectLanguage(text: string): string {
 export async function getAIResponse(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: { role: "user" | "assistant"; content: any }[],
-  audioData?: { base64: string }
+  audioData?: { base64: string },
+  isFirstMessageOfDay: boolean = false
 ) {
   try {
     // Get current time for context
@@ -84,6 +85,23 @@ export async function getAIResponse(
       : (Array.isArray(lastUserMsg?.content) ? lastUserMsg.content.find((c: any) => c.type === "text")?.text : "") || "";
     
     const isAudioMessage = lastUserText === "AUDIO_MESSAGE_RECEIVED" && !!audioData;
+    const currentHour = istTime.getHours();
+    let timeGreeting = "Good morning";
+    if (currentHour >= 12 && currentHour < 17) {
+      timeGreeting = "Good afternoon";
+    } else if (currentHour >= 17) {
+      timeGreeting = "Good evening";
+    }
+
+    let dynamicSystemPrompt = COMMUNITY_SYSTEM_PROMPT;
+    if (isFirstMessageOfDay) {
+      dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):
+This is the user's first message of the day. If their message is a short greeting (e.g. "hi", "hello", "good morning", "hey") OR a general question that starts a conversation, you MUST start your response with a friendly greeting: "${timeGreeting}!". Do this ONLY ONCE today.`;
+    } else {
+      dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):
+This is NOT the first message of the day. The user has already been greeted today or is in an ongoing conversation. You MUST NOT say "Good morning", "Good afternoon", "Good evening", "Hello", or "Hi" in your response. Answer their question directly without any pleasantry preamble.`;
+    }
+
     const detectedLangInstruction = isAudioMessage
       ? "AUDIO: Detect language from audio and reply in that spoken language only."
       : detectLanguage(lastUserText);

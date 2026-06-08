@@ -1,14 +1,10 @@
 import OpenAI from "openai";
 import { COMMUNITY_SYSTEM_PROMPT } from "@/lib/system-prompt";
 
-// Support both OpenRouter and Google AI Studio (Gemini) natively using OpenAI SDK
-const isGemini = process.env.AI_MODEL?.toLowerCase().includes("gemini");
-
+// Enforce Gemini 2.5 Flash natively using OpenAI SDK
 const openai = new OpenAI({
-  baseURL: isGemini 
-    ? "https://generativelanguage.googleapis.com/v1beta/openai/" 
-    : "https://openrouter.ai/api/v1",
-  apiKey: process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY || "dummy-key-for-build",
+  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  apiKey: process.env.GEMINI_API_KEY || "dummy-key-for-build",
 });
 
 /**
@@ -141,7 +137,7 @@ ${isAudioMessage
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         completion = await openai.chat.completions.create({
-          model: isGemini ? (process.env.AI_MODEL || "gemini-2.5-flash") : "anthropic/claude-sonnet-4-20250514",
+          model: "gemini-2.5-flash",
       messages: formattedMessages,
       temperature: 0.2,
       max_tokens: 1000,

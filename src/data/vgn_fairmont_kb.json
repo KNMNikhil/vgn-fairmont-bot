@@ -105,6 +105,7 @@
     },
     "parking": {
       "main_parking": "Basement 1 and Basement 2 parking",
+      "mlcp": "MLCP (Multi-Level Car Parking) is currently Under Construction",
       "guest_parking": "Ground Floor, marked spaces",
       "rules": "One spot per unit | Guest parking limited to 2 hours | Visitor tag required"
     },
@@ -115,6 +116,7 @@
     },
     "clubhouse": {
       "size": "40,000 sq. ft. world-class clubhouse",
+      "status": "Currently Under Construction",
       "features": "Fully air-conditioned as per ASHRAE standards | Indoor forest lounge with waterfalls, birds, and lush greenery | Banquet Halls for special occasions | Oxygen Recharge vents providing fresh oxygen as per ASHRAE Standards."
     },
     "recreation_facilities": {

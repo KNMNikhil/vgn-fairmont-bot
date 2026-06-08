@@ -23,6 +23,19 @@
     "swimming_pool": {
       "location": "Building A, 2nd Floor",
       "timings": "6:00 AM - 8:00 PM",
+      "pools": {
+        "pool_1": {
+          "depth": "7 feet",
+          "type": "Adult / Deep Pool",
+          "note": "Suitable for adults and strong swimmers. Children must be accompanied by an adult."
+        },
+        "pool_2": {
+          "depth": "2 feet",
+          "type": "Kids / Shallow Pool",
+          "note": "Designed for young children and toddlers. Adults must supervise at all times."
+        }
+      },
+      "total_pools": "2",
       "dos": [
         "Shower before entering the pool to remove dirt, oils, and sweat.",
         "Wear appropriate swimming attire (swimsuits, trunks, or swimming costumes).",
@@ -559,5 +572,101 @@
     "can_i_work_from_home": "Yes, but ensure noise levels don't disturb others during quiet hours.",
     "how_to_escalate_complaints": "Step 1: Contact Maintenance (3 days to resolve) | Step 2: Contact Secretary (7 days) | Step 3: Escalate to General Body Meeting",
     "can_i_sublet_my_unit": "Yes, but inform the Association within 15 days of subletting. Subtenants must follow all community rules."
+  },
+
+  "electricity": {
+    "provider": "TANGEDCO (Tamil Nadu Generation and Distribution Corporation)",
+    "billing_process": "Electricity is billed based on individual unit meter readings. Each flat has its own TANGEDCO meter. Bills are generated monthly by TANGEDCO directly.",
+    "calculation": "Electricity charges are calculated by TANGEDCO based on the number of units (kWh) consumed by each flat during the billing period. The tariff slabs are as per TANGEDCO's prevailing domestic tariff rates. Residents pay their electricity bills directly to TANGEDCO — either online via the TANGEDCO portal, through EB Seva centers, or via the TANGEDCO app.",
+    "common_area_electricity": "Electricity for common areas (lifts, corridor lights, security lights, pool, gym, etc.) is covered under the monthly maintenance charges collected by the association.",
+    "payment": "Pay directly to TANGEDCO online or at EB payment centers. Do NOT pay electricity bills through the association — your EB connection is individual.",
+    "contact_for_issues": "For EB-related issues (power cut, billing disputes), contact TANGEDCO directly or raise a ticket via MyGate."
+  },
+
+  "piped_gas": {
+    "status": "VGN Fairmont is transitioning to a fully piped gas community.",
+    "provider": "IGL / City Gas Distribution company empaneled by VGN Fairmont",
+    "rollout_note": "VGN Fairmont will be a fully functional Piped Gas only community. Cylinder gas connections will be phased out.",
+    "options_for_existing_cylinder_holders": {
+      "option_1": "Safe Custody Mode — Temporarily surrender your cylinder connection without permanently disconnecting it. The connection is kept in safe custody and can be reactivated later if needed.",
+      "option_2": "Permanent Surrender — Permanently surrender your existing LPG cylinder connection and switch fully to piped gas."
+    },
+    "billing_process": "Piped gas is billed based on actual consumption measured by your individual gas meter (in Standard Cubic Meters, SCM). Bills are generated monthly by the gas distribution company.",
+    "calculation": "Your monthly piped gas bill = Units consumed (SCM) × Current gas rate per SCM (as fixed by the gas company / government). The meter is read monthly and the bill is raised accordingly. There are no fixed minimum charges — you pay only for what you use.",
+    "payment": "Pay your piped gas bill online through the gas company's portal or app, or at their authorized collection centers.",
+    "contact_for_issues": "For gas leaks or emergencies, immediately close the gas valve and call the gas company emergency number. For billing issues, contact the gas company helpline or raise a ticket via MyGate."
+  },
+
+  "water_tax": {
+    "provider": "CMWSSB (Chennai Metropolitan Water Supply and Sewerage Board) — also known as Metrowater",
+    "billing_process": "Water tax / water charges are levied by CMWSSB on the community as a whole (bulk connection). The association collects water charges from individual residents as part of or alongside maintenance charges.",
+    "calculation": "Water charges are based on the total consumption of the community as billed by CMWSSB. This cost is divided among all flats based on the community's internal distribution policy (typically equal share per flat or based on flat size). The water component is included in or billed separately alongside your monthly maintenance.",
+    "payment": "Water charges are paid to the Association as part of your monthly maintenance. The Association in turn pays the CMWSSB bulk bill on behalf of all residents.",
+    "contact_for_issues": "For water supply issues or complaints, contact the FM helpdesk or raise a MyGate ticket. For CMWSSB issues, the Association coordinates with them on behalf of residents."
+  },
+
+  "maintenance_calculation": {
+    "overview": "Monthly maintenance charges are collected by the VGN Fairmont Association from all flat owners and tenants to cover the upkeep of all common areas and services.",
+    "what_is_covered": [
+      "Salaries of security guards, housekeeping staff, and facility management team",
+      "Common area electricity (lifts, lights, pool, gym, etc.)",
+      "Water charges (CMWSSB bulk bill)",
+      "Lift maintenance and AMC contracts",
+      "Generator diesel and maintenance",
+      "Swimming pool maintenance",
+      "Garden and landscaping",
+      "Pest control",
+      "Accounting, legal, and administrative expenses",
+      "Sinking fund / corpus fund contributions (for major future repairs)"
+    ],
+    "calculation_basis": "Maintenance charges are typically calculated based on the square footage (per sq. ft. rate) or a flat rate per unit, as decided by the Association in the Annual General Meeting (AGM). The rate per sq. ft. or flat is reviewed and revised annually.",
+    "due_date": "Maintenance is due on the 1st of every month.",
+    "late_payment_penalty": "1% per month on the outstanding amount if not paid by the due date.",
+    "payment_method": "Bank transfer or cheque made in favor of VGN Fairmont Residents Association. Account details are shared by the Association via official communication.",
+    "defaulters_rule": "The Association reserves the right to deny services to defaulters who fail to pay by the specified date, as per the amended bylaws.",
+    "contact_for_queries": "Contact the Treasurer or Joint Treasurer for any maintenance charge queries."
+  },
+
+  "mygate_registration": {
+    "what_is_mygate": "MyGate is the official visitor management and community app used by VGN Fairmont. It manages visitor approvals, gate passes, maintenance tickets, notices, and more.",
+    "how_to_register": [
+      "Step 1: Download the MyGate app from the Google Play Store or Apple App Store.",
+      "Step 2: Open the app and tap 'Register / Sign Up'.",
+      "Step 3: Enter your mobile number and verify it with the OTP received.",
+      "Step 4: Search for and select 'VGN Fairmont' as your society.",
+      "Step 5: Enter your Block and Flat number (e.g., B4 - 2E).",
+      "Step 6: Submit your request. Your registration will be PENDING until approved.",
+      "Step 7: Wait for approval — approval is given by the MyGate admin of VGN Fairmont (Association or FM team)."
+    ],
+    "where_to_get_approval": "Your MyGate registration approval is granted by the Association or the Facility Management (FM) team. Contact the FM helpdesk at 93841 69203 or email helpdesk@myfairmont.in if your approval is pending for more than 24 hours.",
+    "note": "Without MyGate approval, you cannot approve or deny visitor entries at the gate. Complete your registration as soon as you move in."
+  },
+
+  "biometric_registration": {
+    "what_it_is": "VGN Fairmont uses a biometric access control system (fingerprint and face ID scanner) at the ground floor entry of each block. This allows residents to enter their block without a physical key or access card.",
+    "how_to_register": [
+      "Step 1: Visit the security desk or the ground floor of your respective block.",
+      "Step 2: Inform the security guard or the FM team that you need to register your fingerprint and face ID.",
+      "Step 3: The security or FM team will guide you to the biometric scanner installed at the ground floor entrance of your block.",
+      "Step 4: Place your finger on the scanner when prompted to enroll your fingerprint.",
+      "Step 5: Look at the camera on the scanner when prompted to enroll your face ID.",
+      "Step 6: Enrollment is done on-the-spot. You can test access immediately after."
+    ],
+    "where_to_go": "Go to the ground floor of YOUR block (e.g., if you live in B4, go to the ground floor entrance of B4 block). The biometric scanner is installed at the main entry door of the ground floor of each block.",
+    "who_to_contact": "Contact the security guard at your block's ground floor OR the FM helpdesk (93841 69203) to schedule your biometric enrollment.",
+    "note": "All residents (owners and tenants) must register their biometrics to gain independent access to their block. Family members who need access should also register separately."
+  },
+
+  "vehicle_enrollment": {
+    "why_it_is_needed": "VGN Fairmont maintains a vehicle registry for all resident vehicles to ensure security, manage parking, and control gate access. All vehicles (cars and bikes) must be registered.",
+    "how_to_enroll": [
+      "Step 1: Visit the security office or the FM helpdesk (ground floor, main office area).",
+      "Step 2: Provide your flat details (Block and Flat Number), vehicle registration number, vehicle make/model, and vehicle color.",
+      "Step 3: The security / FM team will update the vehicle details in the gate management system (MyGate or the physical vehicle register).",
+      "Step 4: You can also add your vehicle in the MyGate app — go to My Profile → My Vehicles → Add Vehicle, and enter your vehicle number."
+    ],
+    "documents_needed": "Vehicle Registration Certificate (RC copy) or at minimum the vehicle registration number.",
+    "where_to_go": "Security office at the main gate or FM helpdesk. Alternatively, self-register via the MyGate app.",
+    "note": "Unregistered vehicles may be denied entry or flagged by security. Register your vehicle immediately after moving in or purchasing a new vehicle."
   }
 }

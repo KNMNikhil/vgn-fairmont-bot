@@ -8,6 +8,11 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
 
+// In-memory lock: tracks phones currently being processed.
+// Prevents two concurrent rapid messages from both getting AI responses.
+const processingPhones = new Set<string>();
+const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const mode = searchParams.get("hub.mode");
@@ -230,9 +235,19 @@ export async function POST(request: NextRequest) {
   const name = contact?.profile?.name || null;
   const whatsappMsgId = message.id;
 
-  // Immediately mark as read (fire and forget)
+  // Immediately mark as read and show ⏳ processing indicator (fire and forget)
   markWhatsAppMessageRead(whatsappMsgId);
   sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
+
+  // ─── IN-MEMORY CONCURRENT LOCK ─────────────────────────────────────────────
+  // If this phone is already being processed AND the incoming text is a greeting
+  // variation, drop it immediately — remove the ⏳ so only blue ticks remain.
+  if (!isAudio && text && GREETING_REGEX.test(text.trim()) && processingPhones.has(phone)) {
+    console.log(`Concurrent lock: dropping greeting "${text}" from ${phone} — already processing.`);
+    sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳ cleanly
+    return Response.json({ status: "dropped_concurrent_greeting" });
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // Check for unparliamentary language
   if (text) {
@@ -263,6 +278,7 @@ export async function POST(request: NextRequest) {
   // Decouple webhook response from slow AI processing
   const immediateResponse = Response.json({ status: "processing_in_background" });
   after(async () => {
+  processingPhones.add(phone);
   try {
     // 1. Maintenance Mode / Kill Switch
     if (process.env.MAINTENANCE_MODE === 'true') {
@@ -438,6 +454,7 @@ export async function POST(request: NextRequest) {
           const allGreetings = userMsgsSinceLastReply.every(m => GREETING_PATTERNS.test((m.content || '').trim()));
           if (allGreetings && userMsgsSinceLastReply.length > 0) {
             console.log(`Spam dedup: dropping greeting "${text}" — already replied to greeting recently.`);
+            sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳ so only blue ticks remain
             return Response.json({ status: "dropped_spam_greeting" });
           }
         }
@@ -942,6 +959,8 @@ export async function POST(request: NextRequest) {
     console.error("Webhook top-level error:", error);
     // Even on top-level crash, return 200 so Meta stops retrying. We already logged it.
     return Response.json({ status: "error_handled_gracefully" }, { status: 200 });
+  } finally {
+    processingPhones.delete(phone);
   }
   });
 

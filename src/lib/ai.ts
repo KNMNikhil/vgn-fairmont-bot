@@ -446,3 +446,23 @@ ${isAudioMessage
     return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
   }
 }
+
+export async function translateToolResponse(englishText: string, userMessage: string): Promise<string> {
+  const langInstructions = detectLanguage(userMessage);
+  if (langInstructions.startsWith("English")) return englishText;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gemini-2.5-flash",
+      messages: [
+        { role: "system", content: `Translate the following system message according to this instruction: ${langInstructions}. Keep emojis and formatting intact. ONLY output the translation, nothing else.` },
+        { role: "user", content: englishText }
+      ],
+      temperature: 0.1,
+    });
+    return completion.choices[0]?.message?.content?.trim() || englishText;
+  } catch (e) {
+    console.error("Translation error:", e);
+    return englishText;
+  }
+}

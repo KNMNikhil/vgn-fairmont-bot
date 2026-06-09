@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
 import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead } from "@/lib/whatsapp";
-import { getAIResponse } from "@/lib/ai";
+import { getAIResponse, translateToolResponse } from "@/lib/ai";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
 
@@ -688,6 +688,10 @@ export async function POST(request: NextRequest) {
       }
     } else {
       replyText = aiResponse.text;
+    }
+
+    if (aiResponse.tool_call && replyText && text) {
+      replyText = await translateToolResponse(replyText, text);
     }
 
     if (!replyText || replyText.trim() === "") {

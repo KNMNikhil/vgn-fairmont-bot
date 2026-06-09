@@ -494,15 +494,6 @@ export async function POST(request: NextRequest) {
               item: args.item,
               flat_number: args.flat_number
             });
-
-            // Auto-register resident for broadcasts
-            const blockMatch = args.flat_number.match(/([A-Z]\d+)/i);
-            const block = blockMatch ? blockMatch[0].toUpperCase() : 'UNKNOWN';
-            await supabase.from("residents").upsert({
-              phone_number: phone,
-              block_number: block,
-              flat_number: args.flat_number
-            }, { onConflict: 'phone_number' });
           }
         } else {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;

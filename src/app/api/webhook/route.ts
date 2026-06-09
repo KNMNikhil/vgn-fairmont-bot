@@ -175,19 +175,27 @@ export async function POST(request: NextRequest) {
           .single();
           
         if (promptMsg) {
-          const { data: newerUserMsgs } = await supabase
-            .from("messages")
+          const { data: convo } = await supabase
+            .from("conversations")
             .select("id")
-            .eq("conversation_id", conversation.id)
-            .eq("role", "user")
-            .gt("created_at", promptMsg.created_at)
-            .limit(1);
+            .eq("phone", phone)
+            .single();
+
+          if (convo) {
+            const { data: newerUserMsgs } = await supabase
+              .from("messages")
+              .select("id")
+              .eq("conversation_id", convo.id)
+              .eq("role", "user")
+              .gt("created_at", promptMsg.created_at)
+              .limit(1);
             
           if (newerUserMsgs && newerUserMsgs.length > 0) {
             console.log(`Ignoring duplicate/late button click for context ${contextId}`);
             await sendWhatsAppMessage(phone, "You've already responded to this prompt or sent a newer message. Please continue the chat below! 👇");
             return Response.json({ status: "ignored_late_button_click" });
           }
+        }
         }
       }
       

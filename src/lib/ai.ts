@@ -512,10 +512,29 @@ ${isAudioMessage
         if (!message?.content && !toolCallName) {
           const finishReason = completion?.choices?.[0]?.finish_reason || "unknown";
           if (finishReason === "stop") {
-            // Gemini returned stop with no content and no tool call — don't retry,
-            // it won't recover. Return a graceful prompt to the user.
-            console.warn("Gemini returned stop+empty. Returning graceful fallback.");
-            return { text: "I didn't quite catch that — could you rephrase? 😊" };
+            // Gemini returned stop+empty (no text, no tool call).
+            // This happens when it wants to call a tool but something blocks it.
+            // Fix: retry once with tool_choice:"none" to force a text-only response.
+            // The model will understand the message and reply intelligently in text.
+            console.warn("Gemini returned stop+empty. Retrying with tool_choice:none to force text response.");
+            try {
+              const fallbackCompletion = await openai.chat.completions.create({
+                model: "gemini-2.5-flash",
+                messages: messages as any,
+                temperature: 0.7,
+                max_tokens: 1000,
+                tool_choice: "none" // Force text-only, no tool calls
+              });
+              const fallbackContent = fallbackCompletion.choices[0]?.message?.content?.trim();
+              if (fallbackContent) {
+                console.log("Fallback text response succeeded.");
+                return { text: fallbackContent };
+              }
+            } catch (fallbackErr) {
+              console.error("Fallback call also failed:", fallbackErr);
+            }
+            // If even the fallback fails, return a generic message
+            return { text: "I understand your concern! Please type your question once more and I'll help you right away. 😊" };
           }
           console.warn(`Gemini returned empty content. Possible safety filter trigger. Reason: ${finishReason}`);
           return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };

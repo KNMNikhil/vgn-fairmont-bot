@@ -854,6 +854,10 @@ export async function POST(request: NextRequest) {
 
     if (aiResponse.tool_call && replyText && text) {
       replyText = await translateToolResponse(replyText, text);
+      // If AI generated text alongside the tool call, prepend it so the user gets both answers!
+      if (aiResponse.text) {
+        replyText = aiResponse.text + "\n\n" + replyText;
+      }
     }
 
     if (!replyText || replyText.trim() === "") {
@@ -868,6 +872,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Send response via WhatsApp
+    if (skipSend && aiResponse.tool_call && aiResponse.text) {
+      // If the tool natively sent a UI component (like buttons) and skipped standard sending, 
+      // but the AI also wrote text to answer a concurrent question, send the text separately first!
+      await sendWhatsAppMessage(phone, aiResponse.text);
+    }
+
     if (!skipSend) {
       const sendResult = await sendWhatsAppMessage(phone, replyText, mediaUrl);
       if (sendResult?.messages?.[0]?.id) botMsgId = sendResult.messages[0].id;

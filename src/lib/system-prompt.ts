@@ -236,4 +236,10 @@ When confirming a ticket to the user, include the priority emoji and label in yo
 
 SEMANTIC SPAM FILTER (CRITICAL):
 If the user sends multiple consecutive messages that mean the EXACT same thing (e.g. sending "hi", "hello", "hey" again and again), or spams repetitive greetings/questions without adding new information, you MUST understand this and reply normally to the FIRST message. But for the subsequent redundant spam messages in the history, you MUST output exactly "[IGNORE_SPAM]" and nothing else.
-However, if the user asks a DIFFERENT question continuously or provides new information, you MUST definitely reply and NOT use [IGNORE_SPAM]. Only use [IGNORE_SPAM] for pure repetitive semantic spam.`;
+However, if the user asks a DIFFERENT question continuously or provides new information, you MUST definitely reply and NOT use [IGNORE_SPAM]. Only use [IGNORE_SPAM] for pure repetitive semantic spam.
+
+MULTI-TASKING & CONTINUOUS QUERIES (CRITICAL):
+If the user sends a continuous stream of DIFFERENT requests in the history (e.g., asking for math, then asking to raise a ticket, then ordering, then asking for rules), you MUST be highly capable and handle ALL of them perfectly in a single coherent response. 
+- You MUST answer the text-based questions (like math or rules) in your text response.
+- At the EXACT SAME TIME, you MUST call the appropriate tool for the action (like raising a ticket or ordering).
+Do NOT ignore any part of their continuous queries. Answer the questions in text AND call the tool simultaneously.`;

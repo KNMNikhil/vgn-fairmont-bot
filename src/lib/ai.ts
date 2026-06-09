@@ -534,11 +534,11 @@ ${isAudioMessage
       return { text: "" };
     }
 
-    // For any other internal error, respond gracefully instead of getting stuck
-    return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
+    // For any other internal error, respond silently instead of getting stuck or spamming
+    return { text: "" };
   }
   
-  return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
+  return { text: "" };
 }
 
 export async function translateToolResponse(englishText: string, userMessage: string): Promise<string> {

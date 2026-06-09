@@ -17,7 +17,29 @@ export async function markWhatsAppMessageRead(messageId: string) {
   }
 }
 
-
+export async function sendWhatsAppReaction(to: string, messageId: string, emoji: string) {
+  try {
+    fetch(`https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: to,
+        type: "reaction",
+        reaction: {
+          message_id: messageId,
+          emoji: emoji
+        }
+      }),
+    }).catch(e => console.error("Reaction failed asynchronously:", e));
+  } catch (error) {
+    console.error("Failed to send reaction:", error);
+  }
+}
 
 export async function sendWhatsAppMessage(to: string, body: string, mediaUrl?: string, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {

@@ -165,6 +165,32 @@ export async function POST(request: NextRequest) {
       // Return early to skip AI processing
       return Response.json({ status: "poll_response_acknowledged" });
     } else if (buttonId.startsWith('ai_reply_')) {
+      const contextId = message.context?.id;
+      if (contextId) {
+        // Prevent clicking multiple buttons on the same prompt or clicking old buttons
+        const { data: promptMsg } = await supabase
+          .from("messages")
+          .select("created_at")
+          .eq("whatsapp_msg_id", contextId)
+          .single();
+          
+        if (promptMsg) {
+          const { data: newerUserMsgs } = await supabase
+            .from("messages")
+            .select("id")
+            .eq("conversation_id", conversation.id)
+            .eq("role", "user")
+            .gt("created_at", promptMsg.created_at)
+            .limit(1);
+            
+          if (newerUserMsgs && newerUserMsgs.length > 0) {
+            console.log(`Ignoring duplicate/late button click for context ${contextId}`);
+            await sendWhatsAppMessage(phone, "You've already responded to this prompt or sent a newer message. Please continue the chat below! 👇");
+            return Response.json({ status: "ignored_late_button_click" });
+          }
+        }
+      }
+      
       // Treat this as normal text from the user for the AI to process
       text = selectedOption;
     } else {
@@ -394,6 +420,7 @@ export async function POST(request: NextRequest) {
 
     let replyText = "";
     let skipSend = false;
+    let botMsgId: string | undefined = undefined;
 
     if (aiResponse.tool_call) {
       const toolName = aiResponse.tool_call.name;
@@ -418,18 +445,20 @@ export async function POST(request: NextRequest) {
           });
           replyText = `📅 Today is ${dateStr}\n🕐 Current time is ${timeStr} IST`;
         } else if (toolName === "ask_confirmation_buttons") {
-          await sendWhatsAppPoll(phone, args.message, [
+          const pollRes = await sendWhatsAppPoll(phone, args.message, [
             { id: "ai_reply_yes", title: "Yes" },
             { id: "ai_reply_no", title: "No" }
           ]);
+          if (pollRes?.messages?.[0]?.id) botMsgId = pollRes.messages[0].id;
           replyText = args.message; // Save it to the DB so we have history context
           skipSend = true; // Button sent natively
         } else if (toolName === "ask_custom_buttons") {
           const options = Array.isArray(args.options) ? args.options.slice(0, 3) : [];
-          await sendWhatsAppPoll(phone, args.message, options.map((opt: string) => ({
+          const pollRes = await sendWhatsAppPoll(phone, args.message, options.map((opt: string) => ({
             id: "ai_reply_" + opt.toLowerCase().replace(/[^a-z0-9]/g, '_'),
             title: opt
           })));
+          if (pollRes?.messages?.[0]?.id) botMsgId = pollRes.messages[0].id;
           replyText = args.message; // Save it to the DB so we have history context
           skipSend = true; // Button sent natively
         } else if (toolName === "route_shop_order") {
@@ -763,7 +792,8 @@ export async function POST(request: NextRequest) {
 
     // Send response via WhatsApp
     if (!skipSend) {
-      await sendWhatsAppMessage(phone, replyText, mediaUrl);
+      const sendResult = await sendWhatsAppMessage(phone, replyText, mediaUrl);
+      if (sendResult?.messages?.[0]?.id) botMsgId = sendResult.messages[0].id;
     }
     sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove the processing reaction
 
@@ -772,6 +802,7 @@ export async function POST(request: NextRequest) {
       conversation_id: conversation.id,
       role: "assistant",
       content: replyText,
+      whatsapp_msg_id: botMsgId || undefined
     }));
 
     pendingPromises.push(supabase

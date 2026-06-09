@@ -5,7 +5,7 @@
       "schedule": "0 0 1 * *"
     },
     {
-      "path": "/api/cron/feedback",
+      "path": "/api/cron/daily_tasks",
       "schedule": "0 10 * * *"
     }
   ]

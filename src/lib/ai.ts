@@ -401,6 +401,71 @@ ${isAudioMessage
         {
           type: "function",
           function: {
+            name: "check_maintenance_balance",
+            description: "Check the pending maintenance dues for the resident. Use when resident asks about their maintenance balance, dues, or if they have paid.",
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "report_lost_item",
+            description: "Report an item that the user has lost in the community.",
+            parameters: {
+              type: "object",
+              properties: {
+                description: { type: "string", description: "Detailed description of the lost item." }
+              },
+              required: ["description"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "report_found_item",
+            description: "Report an item that the user has found in the community.",
+            parameters: {
+              type: "object",
+              properties: {
+                description: { type: "string", description: "Detailed description of the found item and where it is kept." }
+              },
+              required: ["description"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "search_lost_and_found",
+            description: "Search the lost and found board to see if an item was reported lost or found.",
+            parameters: {
+              type: "object",
+              properties: {
+                query: { type: "string", description: "Search query or keyword (e.g., 'keys', 'bottle', 'watch')." }
+              },
+              required: ["query"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "broadcast_emergency",
+            description: "ADMIN ONLY: Broadcast an emergency message to all residents of a specific block.",
+            parameters: {
+              type: "object",
+              properties: {
+                block_number: { type: "string", description: "The block number to broadcast to (e.g., 'A1', 'B2', or 'ALL' for everyone)." },
+                message: { type: "string", description: "The emergency message content to broadcast." }
+              },
+              required: ["block_number", "message"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "send_classified_details",
             description: "Send the image and full details of a specific classified ad to the buyer. Call this when a buyer asks to buy or see a specific item from the active classifieds.",
             parameters: {

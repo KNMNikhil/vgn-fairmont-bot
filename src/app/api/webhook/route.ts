@@ -494,6 +494,15 @@ export async function POST(request: NextRequest) {
               item: args.item,
               flat_number: args.flat_number
             });
+
+            // Auto-register resident for broadcasts
+            const blockMatch = args.flat_number.match(/([A-Z]\d+)/i);
+            const block = blockMatch ? blockMatch[0].toUpperCase() : 'UNKNOWN';
+            await supabase.from("residents").upsert({
+              phone_number: phone,
+              block_number: block,
+              flat_number: args.flat_number
+            }, { onConflict: 'phone_number' });
           }
         } else {
           replyText = `I'm sorry, but the phone number for the ${args.shop_type.replace("_", " ")} is not currently configured.`;
@@ -597,6 +606,83 @@ export async function POST(request: NextRequest) {
           replyText = `I couldn't find a ticket with ID "${args.ticket_id}".`;
         } else {
           replyText = `*Ticket Status* 🎫\n*ID:* ${data.id.split('-')[0]}\n*Issue:* ${data.description}\n*Status:* ${data.status.toUpperCase()}\n*Logged:* ${new Date(data.created_at).toLocaleDateString()}`;
+        }
+      } else if (toolName === "check_maintenance_balance") {
+        const { data, error } = await supabase.from("maintenance_dues")
+          .select("amount_due, due_date, flat_number")
+          .eq("phone_number", phone)
+          .eq("status", "unpaid")
+          .single();
+        if (error || !data) {
+          replyText = "Great news! You have no pending maintenance dues recorded.";
+        } else {
+          replyText = `🧾 *Maintenance Dues*\n\nFlat: ${data.flat_number}\nAmount Due: ₹${data.amount_due}\nDue Date: ${new Date(data.due_date).toLocaleDateString()}\n\nPlease pay at your earliest convenience to avoid late fees.`;
+        }
+      } else if (toolName === "report_lost_item") {
+        const { error } = await supabase.from("lost_and_found").insert({
+          item_type: "lost",
+          description: args.description,
+          reported_by_phone: phone,
+          status: "open"
+        });
+        if (error) {
+          replyText = "Sorry, I couldn't record your lost item. Please try again.";
+        } else {
+          replyText = `✅ I've recorded your lost item: "${args.description}". If anyone finds it, they can report it here and we'll check!`;
+        }
+      } else if (toolName === "report_found_item") {
+        const { error } = await supabase.from("lost_and_found").insert({
+          item_type: "found",
+          description: args.description,
+          reported_by_phone: phone,
+          status: "open"
+        });
+        if (error) {
+          replyText = "Sorry, I couldn't record the found item. Please try again.";
+        } else {
+          replyText = `✅ Thank you! I've recorded the found item: "${args.description}". We'll let you know if someone claims it.`;
+        }
+      } else if (toolName === "search_lost_and_found") {
+        const { data, error } = await supabase.from("lost_and_found")
+          .select("*")
+          .eq("status", "open")
+          .ilike("description", `%${args.query}%`)
+          .limit(5);
+        if (error || !data || data.length === 0) {
+          replyText = `No active lost or found reports matching "${args.query}" were found.`;
+        } else {
+          replyText = `🔍 *Lost & Found Results:*\n\n` + data.map((item: any) => `*${item.item_type.toUpperCase()}:* ${item.description}\n_Reported on ${new Date(item.created_at).toLocaleDateString()}_`).join("\n\n");
+        }
+      } else if (toolName === "broadcast_emergency") {
+        // ADMIN CHECK - replace with actual admin numbers in production
+        const adminNumbers = (process.env.ADMIN_NUMBERS || "919677197402").split(",");
+        if (!adminNumbers.includes(phone)) {
+          replyText = "❌ You do not have permission to use the emergency broadcast command.";
+        } else {
+          let query = supabase.from("residents").select("phone_number");
+          if (args.block_number && args.block_number.toUpperCase() !== "ALL") {
+            query = query.ilike("block_number", `%${args.block_number}%`);
+          }
+          const { data: residents, error } = await query;
+          
+          if (error || !residents || residents.length === 0) {
+            replyText = `No residents found registered for block ${args.block_number}.`;
+          } else {
+            // Note: Since this is outside the 24-hour window, it requires an approved Utility Template.
+            const broadcastMessage = `🚨 *EMERGENCY BROADCAST*\n\n${args.message}\n\n_Sent by Community Administration_`;
+            
+            // In a real scenario, you'd queue this to avoid rate limits, but for demo:
+            let successCount = 0;
+            for (const res of residents) {
+              try {
+                await sendWhatsAppMessage(res.phone_number, broadcastMessage);
+                successCount++;
+              } catch (e) {
+                console.error("Broadcast fail for", res.phone_number);
+              }
+            }
+            replyText = `✅ Broadcast initiated for ${successCount} residents in Block ${args.block_number.toUpperCase()}.`;
+          }
         }
       } else if (toolName === "get_user_stats") {
         const { count: ticketCount, error: ticketError } = await supabase.from("tickets")

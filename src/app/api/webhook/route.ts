@@ -452,14 +452,6 @@ export async function POST(request: NextRequest) {
             hour12: true,
           });
           replyText = `📅 Today is ${dateStr}\n🕐 Current time is ${timeStr} IST`;
-        } else if (toolName === "ask_confirmation_buttons") {
-          const pollRes = await sendWhatsAppPoll(phone, args.message, [
-            { id: "ai_reply_yes", title: "Yes" },
-            { id: "ai_reply_no", title: "No" }
-          ]);
-          if (pollRes?.messages?.[0]?.id) botMsgId = pollRes.messages[0].id;
-          replyText = args.message; // Save it to the DB so we have history context
-          skipSend = true; // Button sent natively
         } else if (toolName === "ask_custom_buttons") {
           const options = Array.isArray(args.options) ? args.options.slice(0, 3) : [];
           const pollRes = await sendWhatsAppPoll(phone, args.message, options.map((opt: string) => ({

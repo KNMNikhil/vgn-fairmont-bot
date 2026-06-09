@@ -188,23 +188,7 @@ ${isAudioMessage
             }
           }
         },
-        {
-          type: "function",
-          function: {
-            name: "ask_confirmation_buttons",
-            description: "Send a Yes/No interactive button message to the user to confirm their order or details. ALWAYS use this when confirming a shop order before calling route_shop_order.",
-            parameters: {
-              type: "object",
-              properties: {
-                message: {
-                  type: "string",
-                  description: "The summary message to display above the Yes/No buttons."
-                }
-              },
-              required: ["message"]
-            }
-          }
-        },
+
         {
           type: "function",
           function: {

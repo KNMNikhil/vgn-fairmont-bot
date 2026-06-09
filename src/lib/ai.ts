@@ -512,7 +512,10 @@ ${isAudioMessage
         if (!message?.content && !toolCallName) {
           const finishReason = completion?.choices?.[0]?.finish_reason || "unknown";
           if (finishReason === "stop") {
-             throw new Error("Gemini returned empty content with stop reason. Triggering retry.");
+            // Gemini returned stop with no content and no tool call — don't retry,
+            // it won't recover. Return a graceful prompt to the user.
+            console.warn("Gemini returned stop+empty. Returning graceful fallback.");
+            return { text: "I didn't quite catch that — could you rephrase? 😊" };
           }
           console.warn(`Gemini returned empty content. Possible safety filter trigger. Reason: ${finishReason}`);
           return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };

@@ -204,6 +204,55 @@ export async function POST(request: NextRequest) {
       
       // Treat this as normal text from the user for the AI to process
       text = selectedOption;
+
+      // ── DIRECT BUTTON HANDLERS (bypass AI for known intents) ──────────────
+      // "Raise Ticket" and "No Need" are handled directly in code.
+      // This prevents AI confusion / stop+empty crashes for these reliable paths.
+      const normalizedSelection = selectedOption.toLowerCase().trim();
+      if (normalizedSelection === "raise ticket" || normalizedSelection === "raise a ticket") {
+        // Mark as read + show reaction first
+        markWhatsAppMessageRead(whatsappMsgId);
+        sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
+        // Find the most recent user complaint message in conversation history to use as description
+        const { data: convoForTicket } = await supabase.from("conversations").select("id").eq("phone", phone).single();
+        let ticketDesc = "General complaint (raised via button)";
+        if (convoForTicket) {
+          const { data: recentUserMsgs } = await supabase.from("messages")
+            .select("content").eq("conversation_id", convoForTicket.id).eq("role", "user")
+            .order("created_at", { ascending: false }).limit(10);
+          // Find the first user message that looks like a complaint (not "raise ticket")
+          const complaint = (recentUserMsgs || []).find(m =>
+            m.content && !/(raise ticket|no need|hi|hey|hello)/i.test(m.content.trim())
+          );
+          if (complaint?.content) ticketDesc = complaint.content;
+        }
+        // Smart priority classification
+        const descLower = ticketDesc.toLowerCase();
+        const redKW = ['lift', 'elevator', 'water leak', 'gas leak', 'fire', 'flood', 'safety', 'power failure', 'emergency'];
+        const yelKW = ['door', 'lock', 'paint', 'ac ', 'air condition', 'noise', 'broken', 'not working'];
+        let priority = 'green', priorityEmoji = '🟢', priorityLabel = 'Low Priority';
+        if (redKW.some(k => descLower.includes(k))) { priority = 'red'; priorityEmoji = '🔴'; priorityLabel = 'URGENT'; }
+        else if (yelKW.some(k => descLower.includes(k))) { priority = 'yellow'; priorityEmoji = '🟡'; priorityLabel = 'Medium Priority'; }
+        const { data: ticketData, error: ticketErr } = await supabase.from("tickets").insert({
+          phone, description: ticketDesc, status: 'open', priority
+        }).select().single();
+        const now = new Date();
+        const ticketDateTime = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+        const ticketReply = ticketErr ? "Sorry, I couldn't log your ticket right now. Please try again! 😔" :
+          `Your ticket has been raised successfully! ✅🎫\n\n*Ticket Details:*\nTicket ID: ${ticketData.id.split('-')[0]}\nIssue: ${ticketDesc}\nPriority: ${priorityEmoji} ${priorityLabel}\nStatus: Open\n📅 Logged: ${ticketDateTime} IST\n\n${priority === 'red' ? '🚨 This is URGENT — the team has been alerted!' : priority === 'yellow' ? '🔧 Our maintenance team will address this soon.' : '✅ We have noted your request and will look into it.'}`;
+        await sendWhatsAppMessage(phone, ticketReply);
+        sendWhatsAppReaction(phone, whatsappMsgId, "");
+        // Save ticket reply to DB
+        if (convoForTicket) {
+          await supabase.from("messages").insert({ conversation_id: convoForTicket.id, role: "assistant", content: ticketReply });
+        }
+        return Response.json({ status: "ticket_raised_via_button" });
+      } else if (normalizedSelection === "no need") {
+        markWhatsAppMessageRead(whatsappMsgId);
+        await sendWhatsAppMessage(phone, "No problem! Let me know if you need anything else or change your mind. 😊");
+        return Response.json({ status: "no_ticket_via_button" });
+      }
+      // ── END DIRECT BUTTON HANDLERS ─────────────────────────────────────────
     } else {
       // Send immediate acknowledgment
       await sendWhatsAppMessage(phone, "Noted.");

@@ -415,7 +415,45 @@ ${isAudioMessage
       ],
       tool_choice: "auto"
     });
-        break; // Success
+        const message = completion.choices[0]?.message;
+        console.log("Raw AI Message:", JSON.stringify(message, null, 2));
+
+        // Check if the AI wants to call a tool
+        let toolCallName = "";
+        let toolCallArgs = "{}";
+
+        if (message?.tool_calls && message.tool_calls.length > 0) {
+          const toolCall = message.tool_calls[0];
+          if (toolCall.type === "function") {
+            toolCallName = toolCall.function.name;
+            toolCallArgs = toolCall.function.arguments || "{}";
+          }
+        } else if (message?.function_call) {
+          toolCallName = message.function_call.name;
+          toolCallArgs = message.function_call.arguments || "{}";
+        }
+
+        if (toolCallName) {
+          const args = JSON.parse(toolCallArgs);
+          return {
+            text: "", // The webhook will handle the rest based on tool_call
+            tool_call: {
+              name: toolCallName,
+              args: args
+            }
+          };
+        }
+
+        if (!message?.content && !toolCallName) {
+          const finishReason = completion?.choices?.[0]?.finish_reason || "unknown";
+          if (finishReason === "stop") {
+             throw new Error("Gemini returned empty content with stop reason. Triggering retry.");
+          }
+          console.warn(`Gemini returned empty content. Possible safety filter trigger. Reason: ${finishReason}`);
+          return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };
+        }
+
+        return { text: message?.content || "" };
       } catch (err) {
         console.error(`AI Attempt ${attempt} failed:`, err);
         if (attempt === retries) throw err;
@@ -423,60 +461,19 @@ ${isAudioMessage
         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 500));
       }
     }
-
-    const message = completion.choices[0]?.message;
-    console.log("Raw AI Message:", JSON.stringify(message, null, 2));
-
-    // Check if the AI wants to call a tool
-    let toolCallName = "";
-    let toolCallArgs = "{}";
-
-    if (message?.tool_calls && message.tool_calls.length > 0) {
-      const toolCall = message.tool_calls[0];
-      if (toolCall.type === "function") {
-        toolCallName = toolCall.function.name;
-        toolCallArgs = toolCall.function.arguments || "{}";
-      }
-    } else if (message?.function_call) {
-      toolCallName = message.function_call.name;
-      toolCallArgs = message.function_call.arguments || "{}";
-    }
-
-    if (toolCallName) {
-      const args = JSON.parse(toolCallArgs);
-      return {
-        text: "", // The webhook will handle the rest based on tool_call
-        tool_call: {
-          name: toolCallName,
-          args: args
-        }
-      };
-    }
-
-    if (!message?.content && !toolCallName) {
-      const finishReason = completion?.choices?.[0]?.finish_reason || "unknown";
-      if (finishReason === "stop") {
-         throw new Error("Gemini returned empty content with stop reason. Triggering retry.");
-      }
-      console.warn(`Gemini returned empty content. Possible safety filter trigger. Reason: ${finishReason}`);
-      return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };
-    }
-
-    return { text: message?.content || "" };
   } catch (error: any) {
-    if (attempt === retries) {
-      console.error("AI Generation Critical Error (All Retries Failed):", error);
-      
-      // If it's a rate limit from spamming 100 messages, silently drop it so we don't spam back.
-      if (error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("quota") || error?.message?.includes("rate limit")) {
-        return { text: "" };
-      }
-
-      // For any other internal error, respond gracefully instead of getting stuck
-      return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
+    console.error("AI Generation Critical Error (All Retries Failed):", error);
+    
+    // If it's a rate limit from spamming 100 messages, silently drop it so we don't spam back.
+    if (error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("quota") || error?.message?.includes("rate limit")) {
+      return { text: "" };
     }
-    console.warn(`AI Attempt ${attempt} failed, retrying...`, error.message);
+
+    // For any other internal error, respond gracefully instead of getting stuck
+    return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
   }
+  
+  return { text: "Wow, that question actually made my circuits pause for a second! My connection to the brain had a hiccup. Could you try asking again?" };
 }
 
 export async function translateToolResponse(englishText: string, userMessage: string): Promise<string> {

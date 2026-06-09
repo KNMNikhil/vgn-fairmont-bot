@@ -210,9 +210,9 @@ export async function POST(request: NextRequest) {
       // This prevents AI confusion / stop+empty crashes for these reliable paths.
       const normalizedSelection = selectedOption.toLowerCase().trim();
       if (normalizedSelection === "raise ticket" || normalizedSelection === "raise a ticket") {
-        // Mark as read + show reaction first
-        markWhatsAppMessageRead(whatsappMsgId);
-        sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
+        // Mark as read + show reaction first (use message.id directly, whatsappMsgId declared later)
+        markWhatsAppMessageRead(message.id);
+        sendWhatsAppReaction(phone, message.id, "⏳");
         // Find the most recent user complaint message in conversation history to use as description
         const { data: convoForTicket } = await supabase.from("conversations").select("id").eq("phone", phone).single();
         let ticketDesc = "General complaint (raised via button)";
@@ -241,14 +241,15 @@ export async function POST(request: NextRequest) {
         const ticketReply = ticketErr ? "Sorry, I couldn't log your ticket right now. Please try again! 😔" :
           `Your ticket has been raised successfully! ✅🎫\n\n*Ticket Details:*\nTicket ID: ${ticketData.id.split('-')[0]}\nIssue: ${ticketDesc}\nPriority: ${priorityEmoji} ${priorityLabel}\nStatus: Open\n📅 Logged: ${ticketDateTime} IST\n\n${priority === 'red' ? '🚨 This is URGENT — the team has been alerted!' : priority === 'yellow' ? '🔧 Our maintenance team will address this soon.' : '✅ We have noted your request and will look into it.'}`;
         await sendWhatsAppMessage(phone, ticketReply);
-        sendWhatsAppReaction(phone, whatsappMsgId, "");
+        sendWhatsAppReaction(phone, message.id, "");
         // Save ticket reply to DB
         if (convoForTicket) {
           await supabase.from("messages").insert({ conversation_id: convoForTicket.id, role: "assistant", content: ticketReply });
         }
         return Response.json({ status: "ticket_raised_via_button" });
       } else if (normalizedSelection === "no need") {
-        markWhatsAppMessageRead(whatsappMsgId);
+        markWhatsAppMessageRead(message.id);
+        sendWhatsAppReaction(phone, message.id, ""); // mark read, no reaction needed for no need
         await sendWhatsAppMessage(phone, "No problem! Let me know if you need anything else or change your mind. 😊");
         return Response.json({ status: "no_ticket_via_button" });
       }

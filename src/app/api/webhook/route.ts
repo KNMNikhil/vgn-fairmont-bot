@@ -8,10 +8,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
 
-// In-memory lock: tracks phones currently being processed.
-// Prevents two concurrent rapid messages from both getting AI responses.
-const processingPhones = new Set<string>();
-const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
+// Greeting pattern — used for DB-level spam deduplication
+const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|hellouu|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -239,16 +237,6 @@ export async function POST(request: NextRequest) {
   markWhatsAppMessageRead(whatsappMsgId);
   sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
 
-  // ─── IN-MEMORY CONCURRENT LOCK ─────────────────────────────────────────────
-  // If this phone is already being processed AND the incoming text is a greeting
-  // variation, drop it immediately — remove the ⏳ so only blue ticks remain.
-  if (!isAudio && text && GREETING_REGEX.test(text.trim()) && processingPhones.has(phone)) {
-    console.log(`Concurrent lock: dropping greeting "${text}" from ${phone} — already processing.`);
-    sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳ cleanly
-    return Response.json({ status: "dropped_concurrent_greeting" });
-  }
-  // ─────────────────────────────────────────────────────────────────────────
-
   // Check for unparliamentary language
   if (text) {
     const unparliamentaryWords = ["idiot", "fool", "stupid", "dumb", "fuck", "shit", "bitch", "bastard", "asshole", "moron", "jerk", "shut up"];
@@ -278,7 +266,6 @@ export async function POST(request: NextRequest) {
   // Decouple webhook response from slow AI processing
   const immediateResponse = Response.json({ status: "processing_in_background" });
   after(async () => {
-  processingPhones.add(phone);
   try {
     // 1. Maintenance Mode / Kill Switch
     if (process.env.MAINTENANCE_MODE === 'true') {
@@ -432,30 +419,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ─── CODE-LEVEL SPAM DEDUPLICATION ────────────────────────────────────────
-    // If the current message is a short greeting/filler, and we already replied
-    // to a greeting recently (last assistant message exists and last user message
-    // before this one was also a greeting), drop it silently without calling AI.
-    if (text && !isAudio) {
-      const GREETING_PATTERNS = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
-      const incomingIsGreeting = GREETING_PATTERNS.test(text.trim());
+    // ─── DB-LEVEL GREETING SPAM DEDUPLICATION ─────────────────────────────────
+    // This works reliably in serverless environments because it uses the DB.
+    // Logic: If the current message is a greeting AND the user has sent another
+    // greeting to this conversation in the last 15 seconds, only the EARLIEST
+    // one should get a reply. All later ones are dropped silently (⏳ removed).
+    if (text && !isAudio && GREETING_REGEX.test(text.trim())) {
+      const fifteenSecondsAgo = new Date(Date.now() - 15000).toISOString();
+      const { data: recentGreetings } = await supabase
+        .from("messages")
+        .select("whatsapp_msg_id, content, created_at")
+        .eq("conversation_id", conversation.id)
+        .eq("role", "user")
+        .gte("created_at", fifteenSecondsAgo)
+        .order("created_at", { ascending: true });
 
-      if (incomingIsGreeting) {
-        // Look in history: if the last assistant message already replied to a greeting,
-        // and there's no new substantive user message since then, drop this.
-        const recentMessages = history.slice(-6); // last 6 messages
-        let lastAssistantIdx = -1;
-        for (let i = recentMessages.length - 1; i >= 0; i--) {
-          if (recentMessages[i].role === 'assistant') { lastAssistantIdx = i; break; }
-        }
-        if (lastAssistantIdx > -1) {
-          // Check if all user messages since last assistant reply are also greetings
-          const userMsgsSinceLastReply = recentMessages.slice(lastAssistantIdx + 1).filter(m => m.role === 'user');
-          const allGreetings = userMsgsSinceLastReply.every(m => GREETING_PATTERNS.test((m.content || '').trim()));
-          if (allGreetings && userMsgsSinceLastReply.length > 0) {
-            console.log(`Spam dedup: dropping greeting "${text}" — already replied to greeting recently.`);
-            sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳ so only blue ticks remain
-            return Response.json({ status: "dropped_spam_greeting" });
+      if (recentGreetings && recentGreetings.length > 1) {
+        // Check: are ALL recent messages also greetings?
+        const allAreGreetings = recentGreetings.every(m => GREETING_REGEX.test((m.content || "").trim()));
+        if (allAreGreetings) {
+          // Only the FIRST (earliest) message should get a reply.
+          // If current message is NOT the first, drop it silently.
+          const firstMsg = recentGreetings[0];
+          if (firstMsg.whatsapp_msg_id !== whatsappMsgId) {
+            console.log(`DB spam dedup: dropping greeting "${text}" — not the first in batch.`);
+            sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
+            return Response.json({ status: "dropped_greeting_not_first" });
           }
         }
       }
@@ -957,10 +946,9 @@ export async function POST(request: NextRequest) {
     return Response.json({ status: "replied" });
   } catch (error) {
     console.error("Webhook top-level error:", error);
+    sendWhatsAppReaction(phone, whatsappMsgId, ""); // Always remove ⏳ even on crash
     // Even on top-level crash, return 200 so Meta stops retrying. We already logged it.
     return Response.json({ status: "error_handled_gracefully" }, { status: 200 });
-  } finally {
-    processingPhones.delete(phone);
   }
   });
 

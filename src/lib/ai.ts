@@ -518,7 +518,12 @@ ${isAudioMessage
           return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };
         }
 
-        return { text: message?.content || "" };
+        const finalContent = message?.content || "";
+        if (finalContent.includes("[IGNORE_SPAM]")) {
+          console.log("Semantic spam detected, ignoring.");
+          return { text: "" };
+        }
+        return { text: finalContent };
       } catch (err) {
         console.error(`AI Attempt ${attempt} failed:`, err);
         if (attempt === retries) throw err;

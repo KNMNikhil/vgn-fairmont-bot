@@ -1,8 +1,10 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import crypto from "node:crypto";
 import { supabase } from "@/lib/supabase";
-import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead } from "@/lib/whatsapp";
+import { sendWhatsAppMessage, downloadWhatsAppMedia, sendWhatsAppPoll, markWhatsAppMessageRead, sendWhatsAppReaction } from "@/lib/whatsapp";
 import { getAIResponse, translateToolResponse } from "@/lib/ai";
+import { scrubPII } from "@/lib/privacy";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
 
@@ -156,13 +158,22 @@ export async function POST(request: NextRequest) {
           }, { onConflict: 'event_id,phone' });
         }
       }
+      
+      // Send immediate acknowledgment
+      await sendWhatsAppMessage(phone, "Noted.");
+      
+      // Return early to skip AI processing
+      return Response.json({ status: "poll_response_acknowledged" });
+    } else if (buttonId.startsWith('ai_reply_')) {
+      // Treat this as normal text from the user for the AI to process
+      text = selectedOption;
+    } else {
+      // Send immediate acknowledgment
+      await sendWhatsAppMessage(phone, "Noted.");
+      
+      // Return early to skip AI processing
+      return Response.json({ status: "poll_response_acknowledged" });
     }
-    
-    // Send immediate acknowledgment
-    await sendWhatsAppMessage(phone, "Noted.");
-    
-    // Return early to skip AI processing
-    return Response.json({ status: "poll_response_acknowledged" });
   } else {
     text = message.text?.body;
     let imageIdString = "";
@@ -187,6 +198,7 @@ export async function POST(request: NextRequest) {
 
   // Immediately mark as read (fire and forget)
   markWhatsAppMessageRead(whatsappMsgId);
+  sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
 
   // Check for unparliamentary language
   if (text) {
@@ -214,7 +226,34 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Decouple webhook response from slow AI processing
+  const immediateResponse = Response.json({ status: "processing_in_background" });
+  after(async () => {
   try {
+    // 1. Maintenance Mode / Kill Switch
+    if (process.env.MAINTENANCE_MODE === 'true') {
+      console.warn(`Maintenance mode active. Dropping message from ${phone}`);
+      await sendWhatsAppMessage(phone, "System maintenance in progress. I will be back online shortly! 🛠️");
+      return Response.json({ status: "maintenance_mode" });
+    }
+
+    // 2. Rate Limiting Check
+    const rateLimit = checkRateLimit(phone);
+    if (!rateLimit.allowed) {
+      console.warn(`Rate limit exceeded for phone ${phone}.`);
+      await sendWhatsAppMessage(phone, "Whoa, you're typing really fast! 🏃‍♂️ Give me a few seconds to process all of that and try again in a minute.");
+      return Response.json({ status: "rate_limited" });
+    }
+
+    // 3. PII Scrubbing
+    if (text) {
+      const originalText = text;
+      text = scrubPII(text);
+      if (originalText !== text) {
+        console.log(`PII scrubbed from message for phone ${phone}`);
+      }
+    }
+
     // Find or create conversation
     let conversation;
     try {
@@ -222,9 +261,10 @@ export async function POST(request: NextRequest) {
         .from("conversations")
         .select("*")
         .eq("phone", phone)
-        .single();
+        .limit(1)
+        .maybeSingle();
         
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+      if (fetchError) {
         console.error("Supabase fetch error:", fetchError);
         throw fetchError;
       }
@@ -312,25 +352,25 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "stored_for_human" });
     }
 
-    // Fetch conversation history (last 20 messages for context)
-    const { data: rawHistory } = await supabase
+    // Fetch history and audio in parallel
+    const historyPromise = supabase
       .from("messages")
       .select("role, content, created_at")
       .eq("conversation_id", conversation.id)
       .order("created_at", { ascending: false })
       .limit(20);
 
-    const history = (rawHistory || []).reverse();
-
-    // Download audio if present
-    let audioData: { base64: string, mimeType: string } | undefined = undefined;
+    let audioPromise: Promise<{ base64: string, mimeType: string } | undefined> = Promise.resolve(undefined);
     if (isAudio && message.audio?.id) {
-      try {
-        audioData = await downloadWhatsAppMedia(message.audio.id);
-      } catch (err) {
+      audioPromise = downloadWhatsAppMedia(message.audio.id).catch(err => {
         console.error("Failed to download audio:", err);
-      }
+        return undefined;
+      });
     }
+
+    const [{ data: rawHistory }, audioResult] = await Promise.all([historyPromise, audioPromise]);
+    const history = (rawHistory || []).reverse();
+    const audioData = audioResult;
 
     let isFirstMessageOfDay = true;
     if (rawHistory && rawHistory.length > 1) {
@@ -353,6 +393,7 @@ export async function POST(request: NextRequest) {
     );
 
     let replyText = "";
+    let skipSend = false;
 
     if (aiResponse.tool_call) {
       const toolName = aiResponse.tool_call.name;
@@ -376,6 +417,21 @@ export async function POST(request: NextRequest) {
             hour12: true,
           });
           replyText = `📅 Today is ${dateStr}\n🕐 Current time is ${timeStr} IST`;
+        } else if (toolName === "ask_confirmation_buttons") {
+          await sendWhatsAppPoll(phone, args.message, [
+            { id: "ai_reply_yes", title: "Yes" },
+            { id: "ai_reply_no", title: "No" }
+          ]);
+          replyText = args.message; // Save it to the DB so we have history context
+          skipSend = true; // Button sent natively
+        } else if (toolName === "ask_custom_buttons") {
+          const options = Array.isArray(args.options) ? args.options.slice(0, 3) : [];
+          await sendWhatsAppPoll(phone, args.message, options.map((opt: string) => ({
+            id: "ai_reply_" + opt.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+            title: opt
+          })));
+          replyText = args.message; // Save it to the DB so we have history context
+          skipSend = true; // Button sent natively
         } else if (toolName === "route_shop_order") {
         const targetPhone = args.shop_type === "supermarket" 
           ? (process.env.SUPERMARKET_NUMBER || "919677197402")
@@ -706,7 +762,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Send response via WhatsApp
-    await sendWhatsAppMessage(phone, replyText, mediaUrl);
+    if (!skipSend) {
+      await sendWhatsAppMessage(phone, replyText, mediaUrl);
+    }
+    sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove the processing reaction
 
     // Store AI response and update timestamp (async)
     pendingPromises.push(supabase.from("messages").insert({
@@ -729,4 +788,7 @@ export async function POST(request: NextRequest) {
     // Even on top-level crash, return 200 so Meta stops retrying. We already logged it.
     return Response.json({ status: "error_handled_gracefully" }, { status: 200 });
   }
+  });
+
+  return immediateResponse;
 }

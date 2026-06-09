@@ -89,14 +89,16 @@ export async function getAIResponse(
     let timeGreeting = "Good morning";
     if (currentHour >= 12 && currentHour < 17) {
       timeGreeting = "Good afternoon";
-    } else if (currentHour >= 17) {
+    } else if (currentHour >= 17 && currentHour < 21) {
       timeGreeting = "Good evening";
+    } else if (currentHour >= 21 || currentHour < 4) {
+      timeGreeting = "Good night";
     }
 
     let dynamicSystemPrompt = COMMUNITY_SYSTEM_PROMPT;
     if (isFirstMessageOfDay) {
       dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):
-This is the user's first message of the day. If their message is a short greeting (e.g. "hi", "hello", "good morning", "hey") OR a general question that starts a conversation, you MUST start your response with a friendly greeting: "${timeGreeting}!". Do this ONLY ONCE today.`;
+This is the user's first message of the day. You MUST unconditionally start your response with the exact friendly greeting: "${timeGreeting}!". Do this BEFORE answering their question or fulfilling their request.`;
     } else {
       dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):
 This is NOT the first message of the day. The user has already been greeted today or is in an ongoing conversation. You MUST NOT say "Good morning", "Good afternoon", "Good evening", "Hello", or "Hi" in your response. Answer their question directly without any pleasantry preamble.`;
@@ -112,7 +114,7 @@ This is NOT the first message of the day. The user has already been greeted toda
 TOOL USAGE — STRICT RULES:
 NEVER call any tool for: swimming pool rules, gym rules, parking rules, pet rules, quiet hours, amenities, security contacts, escalation matrix, association members, maintenance charges, shop locations, maid contacts, community groups, or ANY info already in the knowledge base.
 For those questions: read the knowledge base and reply DIRECTLY. No tools needed.
-Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats, post_classified_ad, get_active_classifieds, send_classified_details.
+Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live DB notices), route_shop_order, ask_confirmation_buttons, rsvp_to_event, get_active_polls, get_upcoming_events (live DB events), get_local_services, get_community_groups, submit_poll_vote, get_user_stats, post_classified_ad, get_active_classifieds, send_classified_details.
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
@@ -189,9 +191,48 @@ ${isAudioMessage
         {
           type: "function",
           function: {
+            name: "ask_confirmation_buttons",
+            description: "Send a Yes/No interactive button message to the user to confirm their order or details. ALWAYS use this when confirming a shop order before calling route_shop_order.",
+            parameters: {
+              type: "object",
+              properties: {
+                message: {
+                  type: "string",
+                  description: "The summary message to display above the Yes/No buttons."
+                }
+              },
+              required: ["message"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
+            name: "ask_custom_buttons",
+            description: "Send an interactive message with custom buttons to the user. Use this when you want to give the user multiple specific options to choose from (e.g. 'Wrong Order', 'Wrong Address', 'Both' or 'Raise Ticket', 'No Need').",
+            parameters: {
+              type: "object",
+              properties: {
+                message: {
+                  type: "string",
+                  description: "The question or prompt to display above the buttons."
+                },
+                options: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "List of button text options (minimum 1, maximum 3 options)."
+                }
+              },
+              required: ["message", "options"]
+            }
+          }
+        },
+        {
+          type: "function",
+          function: {
             name: "get_current_datetime",
             description: "Get the current date and time in IST (Indian Standard Time). MUST be called when user asks about current date, time, today's date, or what time it is.",
-            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
           }
         },
         {
@@ -233,7 +274,7 @@ ${isAudioMessage
           function: {
             name: "get_user_stats",
             description: "Fetch the total count of tickets and orders placed by the current user.",
-            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
           }
         },
         {
@@ -241,7 +282,7 @@ ${isAudioMessage
           function: {
             name: "get_latest_notices",
             description: "ONLY use to fetch LIVE community announcements posted by admins in the database. DO NOT use for rules, amenities, contacts, escalation matrix, swimming pool rules, parking rules, pet rules, or anything already in the knowledge base. Those must be answered from the knowledge base directly.",
-            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
           }
         },
         {
@@ -265,7 +306,7 @@ ${isAudioMessage
           function: {
             name: "get_active_polls",
             description: "Fetch all active community polls that residents can vote on.",
-            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
           }
         },
         {
@@ -370,7 +411,7 @@ ${isAudioMessage
           function: {
             name: "get_active_classifieds",
             description: "Fetch all active classified ads (items for sale by residents).",
-            parameters: { type: "object", properties: { _dummy: { type: "string" } } }
+            parameters: { type: "object", properties: { execute: { type: "boolean", description: "Set to true" } } }
           }
         },
         {

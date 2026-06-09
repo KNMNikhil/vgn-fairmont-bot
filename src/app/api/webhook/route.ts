@@ -416,6 +416,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ─── CODE-LEVEL SPAM DEDUPLICATION ────────────────────────────────────────
+    // If the current message is a short greeting/filler, and we already replied
+    // to a greeting recently (last assistant message exists and last user message
+    // before this one was also a greeting), drop it silently without calling AI.
+    if (text && !isAudio) {
+      const GREETING_PATTERNS = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
+      const incomingIsGreeting = GREETING_PATTERNS.test(text.trim());
+
+      if (incomingIsGreeting) {
+        // Look in history: if the last assistant message already replied to a greeting,
+        // and there's no new substantive user message since then, drop this.
+        const recentMessages = history.slice(-6); // last 6 messages
+        let lastAssistantIdx = -1;
+        for (let i = recentMessages.length - 1; i >= 0; i--) {
+          if (recentMessages[i].role === 'assistant') { lastAssistantIdx = i; break; }
+        }
+        if (lastAssistantIdx > -1) {
+          // Check if all user messages since last assistant reply are also greetings
+          const userMsgsSinceLastReply = recentMessages.slice(lastAssistantIdx + 1).filter(m => m.role === 'user');
+          const allGreetings = userMsgsSinceLastReply.every(m => GREETING_PATTERNS.test((m.content || '').trim()));
+          if (allGreetings && userMsgsSinceLastReply.length > 0) {
+            console.log(`Spam dedup: dropping greeting "${text}" — already replied to greeting recently.`);
+            return Response.json({ status: "dropped_spam_greeting" });
+          }
+        }
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // Get AI response
     const aiResponse = await getAIResponse(
       history.map((m) => ({
@@ -852,13 +881,21 @@ export async function POST(request: NextRequest) {
       replyText = aiResponse.text;
     }
 
-    if (aiResponse.tool_call && replyText && text) {
-      replyText = await translateToolResponse(replyText, text);
-      // If AI generated text alongside the tool call, prepend it so the user gets both answers!
-      if (aiResponse.text) {
-        replyText = aiResponse.text + "\n\n" + replyText;
+    // ─── RESPONSE ORDERING: AI text (info) first, tool response last ──────────
+    // When a tool was called AND the AI also generated informational text, we
+    // must combine them correctly: AI text on top, tool response at the bottom.
+    // We also translate the tool response to match the user's language.
+    if (aiResponse.tool_call) {
+      if (text) {
+        replyText = await translateToolResponse(replyText, text);
+      }
+      // If AI generated extra informational text (rules, FAQ, math, etc.) alongside
+      // the tool call, place it at the TOP and the tool response at the BOTTOM.
+      if (aiResponse.text && aiResponse.text.trim()) {
+        replyText = aiResponse.text.trim() + "\n\n" + replyText.trim();
       }
     }
+    // ─────────────────────────────────────────────────────────────────────────
 
     if (!replyText || replyText.trim() === "") {
       console.log("No reply text generated, dropping silently.");

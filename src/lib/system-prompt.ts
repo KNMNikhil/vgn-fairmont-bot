@@ -242,4 +242,5 @@ MULTI-TASKING & CONTINUOUS QUERIES (CRITICAL):
 If the user sends a continuous stream of DIFFERENT requests in the history (e.g., asking for math, then asking to raise a ticket, then ordering, then asking for rules), you MUST be highly capable and handle ALL of them perfectly in a single coherent response. 
 - You MUST answer the text-based questions (like math or rules) in your text response.
 - At the EXACT SAME TIME, you MUST call the appropriate tool for the action (like raising a ticket or ordering).
+- CONSOLIDATION RULE: NEVER repeat the same sentence, greeting, or phrase multiple times in a single response. If the user sends multiple greetings ("hi", "yo", "hello") in the history, you must consolidate them and provide exactly ONE single greeting. Do NOT write the same answer 5 times.
 Do NOT ignore any part of their continuous queries. Answer the questions in text AND call the tool simultaneously.`;

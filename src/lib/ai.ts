@@ -470,8 +470,9 @@ ${isAudioMessage
     }
 
     if (!message?.content && !toolCallName) {
-      console.warn("Gemini returned empty content. Possible safety filter trigger.");
-      return { text: "I'm not sure how to answer that! Could you try rephrasing your question?" };
+      const finishReason = completion?.choices?.[0]?.finish_reason || "unknown";
+      console.warn(`Gemini returned empty content. Possible safety filter trigger. Reason: ${finishReason}`);
+      return { text: `I'm not sure how to answer that! Could you try rephrasing your question? (Error: ${finishReason})` };
     }
 
     return { text: message?.content || "" };

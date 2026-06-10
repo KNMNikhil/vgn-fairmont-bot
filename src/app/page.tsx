@@ -48,7 +48,15 @@ export default function Dashboard() {
   }, [messages]);
 
   useEffect(() => {
-    if (!supabase) return;
+    // Poll for new messages every 3 seconds as a robust fallback for realtime
+    const interval = setInterval(() => {
+      fetchConversations();
+      if (selectedId) fetchMessages(selectedId);
+    }, 3000);
+
+    if (!supabase) return () => clearInterval(interval);
+
+    // Also keep Supabase Realtime for instant updates if configured correctly
     const channel = supabase
       .channel("realtime-messages")
       .on(
@@ -73,9 +81,10 @@ export default function Dashboard() {
       .subscribe();
 
     return () => {
+      clearInterval(interval);
       supabase?.removeChannel(channel);
     };
-  }, [selectedId, fetchConversations, supabase]);
+  }, [selectedId, fetchConversations, fetchMessages, supabase]);
 
   async function toggleMode() {
     if (!selected) return;
@@ -123,6 +132,49 @@ export default function Dashboard() {
   function getInitials(name: string | null, phone: string) {
     if (name) return name.slice(0, 2).toUpperCase();
     return phone.slice(-2);
+  }
+
+  function renderMessageContent(content: string) {
+    let cleanText = content;
+    let imageId = null;
+    let audioId = null;
+
+    const imageMatch = content.match(/\[IMAGE_ID:\s*([^\]]+)\]/);
+    if (imageMatch) {
+      imageId = imageMatch[1];
+      cleanText = cleanText.replace(imageMatch[0], "").replace("[User sent an image]", "").trim();
+    }
+
+    const audioMatch = content.match(/\[AUDIO_ID:\s*([^\]]+)\]/);
+    if (audioMatch) {
+      audioId = audioMatch[1];
+      cleanText = cleanText.replace(audioMatch[0], "").replace("[Voice Message]", "").trim();
+    }
+
+    if (!audioId && !imageId && cleanText === "[Voice Message]") {
+       return <p className="text-white/60 italic">🎤 Voice message (audio unavailable)</p>;
+    }
+    
+    if (!audioId && !imageId && cleanText === "[User sent an image]") {
+       return <p className="text-white/60 italic">🖼️ Image (media unavailable)</p>;
+    }
+
+    return (
+      <div className="flex flex-col gap-2">
+        {cleanText && <p className="whitespace-pre-wrap">{cleanText}</p>}
+        {imageId && (
+          <div className="rounded-lg overflow-hidden border border-white/10 mt-1 max-w-[280px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/api/media/${imageId}`} alt="Shared media" className="w-full h-auto object-contain bg-black/20" />
+          </div>
+        )}
+        {audioId && (
+          <div className="mt-1">
+            <audio src={`/api/media/${audioId}`} controls className="h-10 w-[240px]" />
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -284,7 +336,7 @@ export default function Dashboard() {
                             : "bg-emerald-600 text-white rounded-tr-sm"
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                        {renderMessageContent(msg.content)}
                       </div>
                       {showTime && (
                         <p className="text-[10px] text-white/25 mt-1.5 px-1">

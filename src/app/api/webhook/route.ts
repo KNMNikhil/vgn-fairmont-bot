@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
   
   let text = "";
   if (isAudio) {
-    text = "[Voice Message]";
+    text = message.audio?.id ? `[Voice Message] [AUDIO_ID: ${message.audio.id}]` : "[Voice Message]";
   } else if (isEventResponse) {
     // Handle native event RSVP response
     const eventRsvp = message.interactive?.event_rsvp;

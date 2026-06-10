@@ -923,29 +923,25 @@ export async function POST(request: NextRequest) {
 
     // ─── RESPONSE ORDERING: AI text (info) first, tool response last ──────────
     // When a tool was called AND the AI also generated informational text, we
-    // must combine them correctly: AI text on top, tool response at the bottom.
-    // We also translate the tool response to match the user's language.
+    // translate the tool response, but DO NOT concatenate them here. We will send 
+    // them as two SEPARATE WhatsApp messages later (user requested tool receipt at the end).
+    let conversationalText = "";
     if (aiResponse.tool_call) {
       if (text) {
         replyText = await translateToolResponse(replyText, text, aiResponse.text);
       }
-      // If AI generated extra informational text (rules, FAQ, math, etc.) alongside
-      // the tool call, place it at the TOP and the tool response at the BOTTOM.
       if (aiResponse.text && aiResponse.text.trim()) {
-        replyText = aiResponse.text.trim() + "\n\n" + replyText.trim();
+        conversationalText = aiResponse.text.trim();
       }
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    if (!replyText || replyText.trim() === "") {
+    if (!replyText && !conversationalText) {
       console.log("No reply text generated, dropping silently.");
       return Response.json({ status: "dropped_silently" });
     }
 
     // ─── CONCURRENCY CHECK: PREVENT DUPLICATE/RACE CONDITION REPLIES ─────────
-    // If the user sent another message while we were generating this response,
-    // we abort this webhook. The newer webhook will see both messages in its 
-    // history and answer them both together.
     const { data: dbMsg } = await supabase
       .from("messages")
       .select("created_at")
@@ -969,32 +965,30 @@ export async function POST(request: NextRequest) {
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    // Check if the AI's response is the founder response to attach the photo
     let mediaUrl: string | undefined = undefined;
     if (replyText.includes("Nikhil") || replyText.includes("நிகில்") || replyText.includes("निखिल") || replyText.includes("నిఖిల్") || replyText.includes("നിഖിൽ")) {
        mediaUrl = "https://vgn-fairmont-bot.vercel.app/founder.png";
     }
 
-    // Send response via WhatsApp
-    if (skipSend && aiResponse.tool_call && aiResponse.text) {
-      // If the tool natively sent a UI component (like buttons) and skipped standard sending, 
-      // but the AI also wrote text to answer a concurrent question, send the text separately first!
-      // BUG FIX: Prevent sending duplicate text if the AI wrote the exact same text in the button prompt
-      const buttonPrompt = aiResponse.tool_call.args?.message || "";
-      const textResponse = aiResponse.text.trim();
-      
-      // Calculate similarity: If the text is exactly the same, or one contains the other
-      const isDuplicate = textResponse && buttonPrompt && 
-                         (textResponse.includes(buttonPrompt) || buttonPrompt.includes(textResponse));
-                         
-      if (!isDuplicate) {
-        await sendWhatsAppMessage(phone, textResponse);
-      } else {
-        console.log("Skipping duplicate text response that matches button prompt.");
-      }
+    // Send AI conversational text FIRST (if any)
+    let aiTextSent = false;
+    if (conversationalText) {
+       // Only send if it's not a duplicate of a button prompt (if skipSend is true, button prompt is pending)
+       let isDuplicate = false;
+       if (skipSend && aiResponse.tool_call?.args?.message) {
+         const buttonPrompt = aiResponse.tool_call.args.message;
+         isDuplicate = conversationalText.includes(buttonPrompt) || buttonPrompt.includes(conversationalText);
+       }
+       if (!isDuplicate) {
+         await sendWhatsAppMessage(phone, conversationalText);
+         aiTextSent = true;
+       } else {
+         console.log("Skipping duplicate text response that matches button prompt.");
+       }
     }
 
-    if (!skipSend) {
+    // Send Tool Response LAST (if skipSend is false, meaning it's a normal text tool like order receipt)
+    if (!skipSend && replyText) {
       const sendResult = await sendWhatsAppMessage(phone, replyText, mediaUrl);
       if (sendResult?.messages?.[0]?.id) botMsgId = sendResult.messages[0].id;
     }
@@ -1008,10 +1002,17 @@ export async function POST(request: NextRequest) {
     sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove the processing reaction
 
     // Store AI response and update timestamp (async)
+    let fullDbContent = replyText;
+    if (conversationalText && replyText) {
+      fullDbContent = conversationalText + "\n\n" + replyText;
+    } else if (conversationalText) {
+      fullDbContent = conversationalText;
+    }
+    
     pendingPromises.push(supabase.from("messages").insert({
       conversation_id: conversation.id,
       role: "assistant",
-      content: replyText,
+      content: fullDbContent,
       whatsapp_msg_id: botMsgId || undefined
     }));
 

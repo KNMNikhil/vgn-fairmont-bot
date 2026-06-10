@@ -633,18 +633,27 @@ export async function translateToolResponse(englishText: string, userMessage: st
   const langInstructions = detectLanguage(sourceTextForLanguage);
   if (langInstructions.startsWith("English")) return englishText;
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gemini-2.5-flash",
-      messages: [
-        { role: "system", content: `Translate the following system message according to this instruction: ${langInstructions}. Keep emojis and formatting intact. ONLY output the translation, nothing else.` },
-        { role: "user", content: englishText }
-      ],
-      temperature: 0.1,
-    });
-    return completion.choices[0]?.message?.content?.trim() || englishText;
-  } catch (e) {
-    console.error("Translation error:", e);
-    return englishText;
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gemini-2.5-flash",
+        messages: [
+          { role: "system", content: `Translate the following system message according to this instruction: ${langInstructions}. Keep emojis and formatting intact. ONLY output the translation, nothing else.` },
+          { role: "user", content: englishText }
+        ],
+        temperature: 0.1,
+      });
+      return completion.choices[0]?.message?.content?.trim() || englishText;
+    } catch (e: any) {
+      lastError = e;
+      console.warn(`Translation attempt ${attempt} failed:`, e?.message || e);
+      if (attempt < 3) {
+        await new Promise(res => setTimeout(res, 1000 * attempt)); // wait 1s, 2s
+      }
+    }
   }
+  
+  console.error("Translation completely failed after retries:", lastError);
+  return englishText;
 }

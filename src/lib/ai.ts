@@ -191,9 +191,9 @@ ${isAudioMessage
 
 
     let completion: any = null;
-    let retries = 3;
+    const MAX_RETRIES = 5;
     
-    for (let attempt = 1; attempt <= retries; attempt++) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         completion = await openai.chat.completions.create({
           model: "gemini-2.5-flash",
@@ -585,23 +585,40 @@ ${isAudioMessage
           return { text: "" };
         }
         return { text: finalContent };
-      } catch (err) {
-        console.error(`AI Attempt ${attempt} failed:`, err);
-        if (attempt === retries) throw err;
-        // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 500));
+      } catch (err: any) {
+        const status = err?.status ?? 0;
+        console.error(`AI Attempt ${attempt}/${MAX_RETRIES} failed (status ${status}):`, err?.message ?? err);
+
+        if (attempt === MAX_RETRIES) {
+          // All retries exhausted — surface a helpful reply to the user instead of silence
+          // 429 = quota/rate-limit (user was spamming, drop silently)
+          if (status === 429 || err?.message?.includes("429") || err?.message?.includes("quota") || err?.message?.includes("rate limit")) {
+            return { text: "" }; // Silent drop for spam rate-limits
+          }
+          // For any other failure (503 overload, network blip, etc.) tell the user clearly
+          console.error("AI Generation Critical Error (All Retries Failed):", err);
+          return { text: "Sorry, I'm having a little trouble connecting right now! 🔄 Please send your message again and I'll get it sorted immediately. 😊" };
+        }
+
+        // Smart backoff based on error type:
+        // 503 = Gemini momentarily overloaded → retry quickly (1s, 2s, 4s …)
+        // 429 = rate limit → wait longer before retry (3s, 9s, 27s …)
+        // Other → standard exponential backoff
+        let waitMs: number;
+        if (status === 503 || err?.message?.includes("503")) {
+          waitMs = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s, 8s
+        } else if (status === 429 || err?.message?.includes("429") || err?.message?.includes("rate limit")) {
+          waitMs = Math.pow(3, attempt) * 1000;      // 3s, 9s, 27s, 81s
+        } else {
+          waitMs = Math.pow(2, attempt) * 500;       // 1s, 2s, 4s, 8s
+        }
+        console.log(`Waiting ${waitMs}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitMs));
       }
     }
   } catch (error: any) {
-    console.error("AI Generation Critical Error (All Retries Failed):", error);
-    
-    // If it's a rate limit from spamming 100 messages, silently drop it so we don't spam back.
-    if (error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("quota") || error?.message?.includes("rate limit")) {
-      return { text: "" };
-    }
-
-    // For any other internal error, respond silently instead of getting stuck or spamming
-    return { text: "" };
+    console.error("Unexpected outer error in getAIResponse:", error);
+    return { text: "Sorry, I'm having a little trouble connecting right now! 🔄 Please send your message again and I'll get it sorted immediately. 😊" };
   }
   
   return { text: "" };

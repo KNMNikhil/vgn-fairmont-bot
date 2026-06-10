@@ -291,5 +291,12 @@ You must handle multiple questions intelligently based on how the user sent them
 1. CONSECUTIVE USER MESSAGES: If the conversation history shows multiple user messages back-to-back WITHOUT an assistant response in between (e.g., User: "waste disposal" -> User: "drinking water" -> User: "dog feeding"), this means the user sent multiple separate questions rapidly before you could reply. You MUST assume ALL of them are unanswered, and you MUST answer ALL of them together in a single coherent response. Do NOT ignore the older consecutive messages!
 2. SINGLE MESSAGE (Mixed Questions): If a SINGLE user message contains multiple different requests (e.g., "president who, security number, plumber number, give vgn rules"), you MUST answer ALL of them perfectly in one single coherent response. 
    - CRITICAL ZERO-DROP RULE: You are FORBIDDEN from ignoring or dropping ANY of the user's questions. You MUST answer every single thing asked in the text-based questions AND call the appropriate tool simultaneously. Do NOT miss the "VGN rules" if they asked for it!
-3. RESPONSE ORDERING (CRITICAL): Do NOT write tool confirmation messages or follow-up questions (like asking for flat number or ticket ID) in your text response. The system will automatically append the tool's actual response to the VERY BOTTOM of your text. You only need to provide the informational text (rules, math, FAQ) and call the tool simultaneously.
+3. RESPONSE ORDERING & MISSING ARGUMENTS (CRITICAL):
+   - If you actually call a tool, do NOT write confirmation messages in your text. The system will automatically append the tool's actual receipt as a SEPARATE message at the bottom.
+   - If you CANNOT call a tool because you are missing a required argument (like flat number for orders/tickets), you MUST ask the user for it. 
+   - CRITICAL DELIMITER RULE: If you are answering informational questions AND asking for a missing argument in the same response, you MUST physically separate the missing argument question using the exact delimiter ||| on a new line.
+   - Example Output:
+     The airport is 8km away. The common toilet is on the ground floor.
+     |||
+     To order 6 mangoes, please provide your Block and Door Number.
 - CONSOLIDATION RULE: NEVER repeat the same sentence or greeting multiple times in a single response.`;

@@ -481,29 +481,51 @@ export async function POST(request: NextRequest) {
     }
 
     // ─── DB-LEVEL GREETING SPAM DEDUPLICATION ─────────────────────────────────
-    // This works reliably in serverless environments because it uses the DB.
-    // Logic: If the current message is a greeting AND the user has sent another
-    // greeting to this conversation in the last 15 seconds, only the EARLIEST
-    // one should get a reply. All later ones are dropped silently (⏳ removed).
+    // Logic:
+    // 1. Look at the last 15 seconds of messages from this user.
+    // 2. Walk BACKWARDS from the current (latest) message.
+    // 3. Count only the UNBROKEN consecutive streak of greetings at the end.
+    //    - If a non-greeting message appears in between, the streak RESETS.
+    // 4. If the current message is part of a consecutive greeting streak of >1,
+    //    drop it. But if a non-greeting broke the chain before this, treat this
+    //    greeting as fresh (streak of 1) and let it through.
+    //
+    // Example: ["Hi", "Hola", "Escalation matrix", "Hey"]
+    //  - "Hi"   → streak=1 → reply ✅
+    //  - "Hola" → streak=2, all greetings → drop ❌
+    //  - "Escalation matrix" → not a greeting → reply ✅ (streak reset to 0)
+    //  - "Hey"  → streak=1 (chain was broken by "escalation matrix") → reply ✅
     if (text && !isAudio && GREETING_REGEX.test(text.trim())) {
       const fifteenSecondsAgo = new Date(Date.now() - 15000).toISOString();
-      const { data: recentGreetings } = await supabase
+      const { data: recentMessages } = await supabase
         .from("messages")
         .select("whatsapp_msg_id, content, created_at")
         .eq("conversation_id", conversation.id)
         .eq("role", "user")
         .gte("created_at", fifteenSecondsAgo)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true }); // oldest → newest
 
-      if (recentGreetings && recentGreetings.length > 1) {
-        // Check: are ALL recent messages also greetings?
-        const allAreGreetings = recentGreetings.every(m => GREETING_REGEX.test((m.content || "").trim()));
-        if (allAreGreetings) {
-          // Only the FIRST (earliest) message should get a reply.
-          // If current message is NOT the first, drop it silently.
-          const firstMsg = recentGreetings[0];
-          if (firstMsg.whatsapp_msg_id !== whatsappMsgId) {
-            console.log(`DB spam dedup: dropping greeting "${text}" — not the first in batch.`);
+      if (recentMessages && recentMessages.length > 1) {
+        // Walk backwards from the end to find the unbroken consecutive greeting streak.
+        // Stop as soon as we hit a non-greeting message.
+        let consecutiveGreetingStreak = 0;
+        for (let i = recentMessages.length - 1; i >= 0; i--) {
+          const content = (recentMessages[i].content || "").trim();
+          if (GREETING_REGEX.test(content)) {
+            consecutiveGreetingStreak++;
+          } else {
+            // A different message broke the streak — stop counting
+            break;
+          }
+        }
+
+        // If there are 2+ consecutive greetings at the end AND current message
+        // is not the first one in that streak, drop it.
+        if (consecutiveGreetingStreak > 1) {
+          // The first message in the streak is at index: (length - consecutiveGreetingStreak)
+          const firstInStreak = recentMessages[recentMessages.length - consecutiveGreetingStreak];
+          if (firstInStreak && firstInStreak.whatsapp_msg_id !== whatsappMsgId) {
+            console.log(`DB spam dedup: dropping greeting "${text}" — consecutive streak of ${consecutiveGreetingStreak}, not the first.`);
             sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
             return Response.json({ status: "dropped_greeting_not_first" });
           }
@@ -511,6 +533,7 @@ export async function POST(request: NextRequest) {
       }
     }
     // ─────────────────────────────────────────────────────────────────────────
+
 
     // Get AI response
     const aiResponse = await getAIResponse(

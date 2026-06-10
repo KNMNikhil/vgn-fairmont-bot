@@ -337,13 +337,6 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "database_error_handled" });
     }
 
-    if (name && name !== conversation.name) {
-      await supabase
-        .from("conversations")
-        .update({ name })
-        .eq("id", conversation.id);
-    }
-
     if (!conversation) {
       return Response.json({ error: "Failed to create conversation" }, { status: 500 });
     }
@@ -385,11 +378,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update conversation timestamp (async)
+    // Update conversation timestamp + name in ONE batched async write (not blocking)
     const pendingPromises: any[] = [];
+    const conversationUpdates: Record<string, any> = { updated_at: new Date().toISOString() };
+    if (name && name !== conversation.name) {
+      conversationUpdates.name = name; // Batch name update instead of blocking await
+    }
     pendingPromises.push(supabase
       .from("conversations")
-      .update({ updated_at: new Date().toISOString() })
+      .update(conversationUpdates)
       .eq("id", conversation.id));
 
     // If mode is 'human', don't auto-reply
@@ -494,6 +491,7 @@ export async function POST(request: NextRequest) {
     );
 
     let replyText = "";
+    let conversationalText = "";
     let skipSend = false;
     let botMsgId: string | undefined = undefined;
     let pendingPollArgs: { phone: string, message: string, options: any[] } | null = null;
@@ -918,14 +916,21 @@ export async function POST(request: NextRequest) {
         replyText = `I ran into an issue while trying to use the ${toolName.replace(/_/g, ' ')} tool. Please try again later.`;
       }
     } else {
-      replyText = aiResponse.text;
+      // If AI didn't call a tool, it might still have generated a missing argument prompt
+      // which we asked it to delimit with ||| so we can send it as a separate message.
+      if (aiResponse.text && aiResponse.text.includes("|||")) {
+        const parts = aiResponse.text.split("|||");
+        conversationalText = parts[0].trim();
+        replyText = parts[1].trim(); 
+      } else {
+        replyText = aiResponse.text;
+      }
     }
 
     // ─── RESPONSE ORDERING: AI text (info) first, tool response last ──────────
     // When a tool was called AND the AI also generated informational text, we
     // translate the tool response, but DO NOT concatenate them here. We will send 
     // them as two SEPARATE WhatsApp messages later (user requested tool receipt at the end).
-    let conversationalText = "";
     if (aiResponse.tool_call) {
       if (text) {
         replyText = await translateToolResponse(replyText, text, aiResponse.text);

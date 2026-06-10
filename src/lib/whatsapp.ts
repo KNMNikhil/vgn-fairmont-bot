@@ -42,6 +42,13 @@ export async function sendWhatsAppReaction(to: string, messageId: string, emoji:
 }
 
 export async function sendWhatsAppMessage(to: string, body: string, mediaUrl?: string, retries = 3) {
+  // WhatsApp hard limit: 4096 characters per message. Truncate gracefully to prevent silent failures.
+  const WA_MAX_CHARS = 4000; // Use 4000 (not 4096) for safe margin
+  if (body && body.length > WA_MAX_CHARS) {
+    console.warn(`[WhatsApp] Message to ${to} truncated: ${body.length} chars → ${WA_MAX_CHARS}`);
+    body = body.substring(0, WA_MAX_CHARS) + "…\n\n_(Message was too long and was trimmed. Please ask a more specific question.)_";
+  }
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const controller = new AbortController();

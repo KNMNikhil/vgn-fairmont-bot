@@ -1,12 +1,10 @@
 /**
  * Supabase-Backed Sliding Window Rate Limiter
  *
- * Unlike an in-memory Map, this uses the existing `messages` table to count
- * how many messages a phone number sent in the last 60 seconds.
- * This is shared across ALL serverless function instances, making it work
- * correctly even when 100s of users message simultaneously on Vercel.
+ * OPTIMIZED: Single-query approach using a JOIN instead of two sequential queries.
+ * This cuts DB round-trips from 2 → 1 per request, which matters at 800+ concurrent users.
  *
- * No new DB table needed — it reads from the `messages` table that already exists.
+ * No new DB table needed — reads from the existing `messages` table.
  */
 
 import { supabase } from "@/lib/supabase";
@@ -17,17 +15,15 @@ export async function checkRateLimit(phone: string): Promise<{ allowed: boolean 
   try {
     const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
 
-    // Count messages from this phone in the last 60 seconds by joining conversations
+    // Single query: count user messages in last 60s by joining conversations on phone
+    // Uses idx_conversations_phone + idx_messages_convo_role_created indexes for speed
     const { count, error } = await supabase
       .from("messages")
       .select("id", { count: "exact", head: true })
       .eq("role", "user")
       .gte("created_at", oneMinuteAgo)
-      .in(
-        "conversation_id",
-        // Sub-select: get conversation IDs for this phone
-        (await supabase.from("conversations").select("id").eq("phone", phone)).data?.map((c) => c.id) ?? []
-      );
+      .eq("conversations.phone", phone)
+      .not("conversations", "is", null);
 
     if (error) {
       // If DB check fails, fail open (allow the message) to avoid blocking real users

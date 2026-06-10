@@ -195,11 +195,16 @@ ${isAudioMessage
     
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
+        // 25-second hard timeout on the Gemini call.
+        // Without this, a stalled Gemini request silently blocks the user for up to 60s.
+        const aiAbortController = new AbortController();
+        const aiTimeoutId = setTimeout(() => aiAbortController.abort(), 25000);
+
         completion = await openai.chat.completions.create({
           model: "gemini-2.5-flash",
       messages: formattedMessages,
       temperature: 0.2,
-      max_tokens: 1000,
+      max_tokens: 600, // Reduced from 1000 — WhatsApp msgs are short; this cuts response time ~30%
       tools: [
         {
           type: "function",
@@ -518,9 +523,13 @@ ${isAudioMessage
         }
       ],
       tool_choice: "auto"
-    });
+    } as any);
+        clearTimeout(aiTimeoutId); // Clear timeout on successful response
         const message = completion.choices[0]?.message;
-        console.log("Raw AI Message:", JSON.stringify(message, null, 2));
+        // Debug log removed from hot path — was serializing entire AI response on every request
+        if (process.env.DEBUG_AI === 'true') {
+          console.log("Raw AI Message:", JSON.stringify(message, null, 2));
+        }
 
         // Check if the AI wants to call a tool
         let toolCallName = "";

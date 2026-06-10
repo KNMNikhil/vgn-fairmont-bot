@@ -540,7 +540,7 @@ ${isAudioMessage
         if (toolCallName) {
           const args = JSON.parse(toolCallArgs);
           return {
-            text: "", // The webhook will handle the rest based on tool_call
+            text: message?.content || "", // Preserving AI text if it answered multiple questions simultaneously
             tool_call: {
               name: toolCallName,
               args: args

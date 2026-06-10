@@ -9,7 +9,7 @@
     "architect": "Designed by Singapore architect DPA",
     "description": "A premium, ready-to-move gated community spanning 10.46 acres with 70% open space.",
     "location": "Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
-    "location_map_link": "https://www.google.com/maps/dir//VGN+Fairmont,+Guindy,+Block+B4,+78,+Parthasarathy+Koil+St,+Thiru+Vi+Ka+Industrial+Estate,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0066856,80.2196723,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a526717d150725d:0x85382a530ceca3ef!2m2!1d80.2104462!2d13.020797?entry=ttu&g_ep=EgoyMDI2MDYwMS4wIKXMDSoASAFQAw%3D%3D",
+    "location_map_link": "[VGN Fairmont Google Maps](https://www.google.com/maps/dir//VGN+Fairmont,+Guindy,+Block+B4,+78,+Parthasarathy+Koil+St,+Thiru+Vi+Ka+Industrial+Estate,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0066856,80.2196723,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a526717d150725d:0x85382a530ceca3ef!2m2!1d80.2104462!2d13.020797?entry=ttu&g_ep=EgoyMDI2MDYwMS4wIKXMDSoASAFQAw%3D%3D)",
     "address": "VGN Fairmont, Ekkatuthangal, Parthasarathy Koil St, Thiru Vi Ka Industrial Estate, Guindy, Chennai, Tamil Nadu - 600032",
     "status": "Ready to Move (Completion Certificate Received)",
     "established": "August 2020 (Launch Date)",
@@ -21,7 +21,15 @@
   },
   "connectivity_and_location": {
     "transit": "500m to Ekkattuthangal Metro Station. 1km to Kathipara Junction and IT Tech Park. 8km to Airport. Connected via Suburban Trains and Buses.",
-    "neighborhood": "Hilton Luxury Hotel (1km), ITC Grand Chola (2km), PSBB Millennium School (2km), Ashok Pillar (2km), Theatres (2km), PSBB School (2.5km), Jawahar Vidyalaya School (2.8km), Saidapet (3km), Nexus Mall (4km), IIT Madras (4km), Adyar (5km), T.Nagar (5km)."
+    "neighborhood": "Hilton Luxury Hotel (1km), ITC Grand Chola (2km), PSBB Millennium School (2km), Ashok Pillar (2km), Theatres (2km), PSBB School (2.5km), Jawahar Vidyalaya School (2.8km), Saidapet (3km), Nexus Mall (4km), IIT Madras (4km), Adyar (5km), T.Nagar (5km).",
+    "important_location_links": {
+      "airport": "[Chennai International Airport](https://www.google.com/maps/dir//Chennai+International+Airport,+Tirusulam,+Chennai,+Tamil+Nadu/@13.0233132,80.2209766,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a525e1f5da86397:0x21092f216ee26e47!2m2!1d80.1706653!2d12.9939595?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)",
+      "nearest_metro": "[Ekkattuthangal Metro](https://www.google.com/maps/dir//Ekkattuthangal,+Jawaharlal+Nehru+Salai,+Labour+Colony,+SIDCO+Industrial+Estate,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0233132,80.2209766,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a52673ebcbd9347:0xfb36cbeba78594dc!2m2!1d80.2052759!2d13.0165829?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)",
+      "central_railway_station": "[Central Railway Station](https://www.google.com/maps/dir//Central+Railway+Station,+Periamet,+Park+Town,+Chennai,+Tamil+Nadu+600003/@13.0233132,80.2209766,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a52660772f6ecbf:0xc655dabc6963497b!2m2!1d80.2689539!2d13.0808211?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)",
+      "egmore_railway_station": "[Egmore Railway Station](https://www.google.com/maps/dir//Chennai+Egmore,+Gandhi+Irwin+Rd,+Egmore,+Chennai,+Tamil+Nadu+600008/@13.0233132,80.2209766,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a52660919f49c9f:0x2aebcb33cec50cce!2m2!1d80.262206!2d13.077914?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)",
+      "ekkatuthangal_bus_stand": "[Ekkattuthangal Bus Stand](https://www.google.com/maps/dir//Ekkattuthangal,+Ambal+Nagar,+Ekkatuthangal,+Jawaharlal+Nehru+Road,+Hindustan+Teleprinters+Staff+Quarters,+SIDCO+Industrial+Estate,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0233132,80.2209766,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x3a52673c410264d3:0x286fdda8409026a5!2m2!1d80.2063584!2d13.019221?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)",
+      "hyundai_motor_plaza": "[Hyundai Motor Plaza](https://www.google.com/maps/dir//Motor+Plaza+-+Hyundai,+Thiru+%E2%80%93+Vi+%E2%80%93+Ka+Industrial+Estate,+Ekkatuthangal,+54,+Grand+Southern+Trunk+Rd,+Guindy,+Chennai,+Tamil+Nadu+600032/@13.0233132,80.2209766,15z/data=!3m2!4b1!5s0x3a52673c3bdb05f5:0xeb9e72501ebf5724!4m8!4m7!1m0!1m5!1m1!1s0x3a526722a5545b59:0x78700ac23b459193!2m2!1d80.206382!2d13.0182093?entry=ttu&g_ep=EgoyMDI2MDYwMy4xIKXMDSoASAFQAw%3D%3D)"
+    }
   },
   "amenities": {
     "present_status_note": "Currently, ONLY the swimming pool is fully operational and open to residents. All other amenities (gym, badminton courts, mini-theatres, club house, etc.) are planned or under construction and are NOT available right now.",
@@ -433,6 +441,11 @@
       "defaulters_clause": "The association reserves the right to deny its services to defaulters who fail to comply with paying raised amounts by the specific date.",
       "social_media_allegations": "No open/implicit allegations against EC members without basis on WhatsApp/Social Media. Grievances must be in writing via official email/letter. Unfounded allegations will result in temporary block, notice, and potentially permanent removal pending unconditional apology.",
       "pet_amendments": "Pets should not be unleashed or allowed to defecate/urinate in common areas. Government banned breeds prohibited. Owners must clean up after pets, register pets with association (vaccinations), and join official pet owners group."
+    },
+    "gate_entry_exit_rules": {
+      "entry": "Residents, delivery boys, Rapido, cabs (Uber/Ola), etc. can enter through the main gate.",
+      "exit": "Anyone who enters through the main gate MUST NOT exit through the main gate. They must go around and exit ONLY through the exit gate located in the backside of the B1 block on the ground floor.",
+      "cabs_and_bikes_booking": "You can book cabs, autos, or bikes via Rapido, Uber, or Ola. They are allowed to come directly below your block to pick you up. However, they must strictly follow the rule to exit only through the exit gate."
     }
   },
   "association": {

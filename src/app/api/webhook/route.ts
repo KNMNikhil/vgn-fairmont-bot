@@ -942,6 +942,33 @@ export async function POST(request: NextRequest) {
       return Response.json({ status: "dropped_silently" });
     }
 
+    // ─── CONCURRENCY CHECK: PREVENT DUPLICATE/RACE CONDITION REPLIES ─────────
+    // If the user sent another message while we were generating this response,
+    // we abort this webhook. The newer webhook will see both messages in its 
+    // history and answer them both together.
+    const { data: dbMsg } = await supabase
+      .from("messages")
+      .select("created_at")
+      .eq("whatsapp_msg_id", whatsappMsgId)
+      .single();
+
+    if (dbMsg) {
+      const { data: newerMessages } = await supabase
+        .from("messages")
+        .select("id")
+        .eq("conversation_id", conversation.id)
+        .eq("role", "user")
+        .gt("created_at", dbMsg.created_at)
+        .limit(1);
+
+      if (newerMessages && newerMessages.length > 0) {
+        console.log(`[RACE CONDITION] Silently dropping reply for ${whatsappMsgId} because a newer message arrived. The newer webhook will answer all unanswered messages.`);
+        sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
+        return Response.json({ status: "superseded_by_newer_message" });
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // Check if the AI's response is the founder response to attach the photo
     let mediaUrl: string | undefined = undefined;
     if (replyText.includes("Nikhil") || replyText.includes("நிகில்") || replyText.includes("निखिल") || replyText.includes("నిఖిల్") || replyText.includes("നിഖിൽ")) {

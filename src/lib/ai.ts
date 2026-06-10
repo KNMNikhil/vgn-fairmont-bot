@@ -624,8 +624,13 @@ ${isAudioMessage
   return { text: "" };
 }
 
-export async function translateToolResponse(englishText: string, userMessage: string): Promise<string> {
-  const langInstructions = detectLanguage(userMessage);
+export async function translateToolResponse(englishText: string, userMessage: string, contextMessage?: string): Promise<string> {
+  let sourceTextForLanguage = userMessage;
+  if (userMessage.startsWith("[Voice Message]") && contextMessage) {
+    sourceTextForLanguage = contextMessage;
+  }
+  
+  const langInstructions = detectLanguage(sourceTextForLanguage);
   if (langInstructions.startsWith("English")) return englishText;
 
   try {

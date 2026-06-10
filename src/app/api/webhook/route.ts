@@ -927,7 +927,7 @@ export async function POST(request: NextRequest) {
     // We also translate the tool response to match the user's language.
     if (aiResponse.tool_call) {
       if (text) {
-        replyText = await translateToolResponse(replyText, text);
+        replyText = await translateToolResponse(replyText, text, aiResponse.text);
       }
       // If AI generated extra informational text (rules, FAQ, math, etc.) alongside
       // the tool call, place it at the TOP and the tool response at the BOTTOM.

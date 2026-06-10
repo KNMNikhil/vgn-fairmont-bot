@@ -23,7 +23,6 @@
     "transit": "500m to Ekkattuthangal Metro Station. 1km to Kathipara Junction and IT Tech Park. 8km to Airport. Connected via Suburban Trains and Buses.",
     "neighborhood": "Hilton Luxury Hotel (1km), ITC Grand Chola (2km), PSBB Millennium School (2km), Ashok Pillar (2km), Theatres (2km), PSBB School (2.5km), Jawahar Vidyalaya School (2.8km), Saidapet (3km), Nexus Mall (4km), IIT Madras (4km), Adyar (5km), T.Nagar (5km)."
   },
-
   "amenities": {
     "present_status_note": "Currently, ONLY the swimming pool is fully operational and open to residents. All other amenities (gym, badminton courts, mini-theatres, club house, etc.) are planned or under construction and are NOT available right now.",
     "play_area": {
@@ -124,9 +123,20 @@
     },
     "convenience_facilities": {
       "facilities": "Departmental store | ATM centers | Pharmacy | STP & Water Softening Plant with state-of-the-art recycling for 24x7 water supply | Piped Gas (24x7 with outdoor cylinder storage) | Power backup: 300 watts for Compact 2 BHK, 500 watts for 2 BHK, 800 watts for 3 BHK, 1000 watts for 4 BHK & above. 50% backup for common areas/clubhouse (excluding ACs), 100% for lifts, STP, and WTP."
+    },
+    "public_restroom": {
+      "location": "Below B6 block, ground floor",
+      "description": "Common public restroom"
+    },
+    "waste_disposal": {
+      "trash_chute": "Every block in every floor has a trash chute for residents to dispose of daily waste to keep the community clean.",
+      "common_small_dustbin": "Ground floor in the corner behind B3 block.",
+      "common_big_dustbins": "Ground floor in the backside of D block, and another big dustbin near the dog feeding zone."
+    },
+    "drinking_water_machine": {
+      "location": "Ground floor, near the entrance of the swimming pool."
     }
   },
-
   "shops_and_services": {
     "iron_shop_1": {
       "location": "Below B4 block, backside, ground floor",
@@ -212,7 +222,6 @@
       }
     }
   },
-
   "security_personnel": {
     "note": "Security personnel work in shifts. Contact the appropriate person based on time of day.",
     "b1_block": {
@@ -352,11 +361,11 @@
       }
     }
   },
-
   "pet_care": {
     "dog_feeding_time": {
       "morning": "6:00 AM - 7:00 AM",
-      "evening": "After 9:00 PM"
+      "evening": "After 9:00 PM",
+      "note": "The designated dog feeding time is strictly for stray dogs and street dogs, NOT for home-grown dogs. Residents can feed their own pets whenever they wish in their homes."
     },
     "dog_feeding_location": {
       "designated_zone": "Behind the D Block",
@@ -380,9 +389,12 @@
     "emergency_vet": {
       "24_hour_clinic": "Emergency Pet Hospital",
       "contact": "+91-98765-99999"
+    },
+    "dog_poop_rules": {
+      "resident_dogs": "If a resident's dog poops, the owner must clean it immediately and dispose of it.",
+      "stray_dogs": "If stray or street dogs poop, it is the responsibility of the association cleaner to clean it, not the resident's duty."
     }
   },
-
   "rules_and_regulations": {
     "quiet_hours": {
       "time_period": "10:00 PM - 8:00 AM",
@@ -423,7 +435,6 @@
       "pet_amendments": "Pets should not be unleashed or allowed to defecate/urinate in common areas. Government banned breeds prohibited. Owners must clean up after pets, register pets with association (vaccinations), and join official pet owners group."
     }
   },
-
   "association": {
     "president": {
       "name": "Mr. Praveen Kumar",
@@ -469,7 +480,6 @@
       "location": "Community Hall"
     }
   },
-
   "quick_contacts": {
     "emergency": {
       "police": "100",
@@ -495,7 +505,6 @@
       "nearest_supermarket": "[Supermarket Name & Contact]"
     }
   },
-
   "community_events": {
     "upcoming_events": [
       {
@@ -561,7 +570,6 @@
     },
     "how_to_add_event": "Contact Association Secretary with event details (title, date, time, location, description) at least 2 weeks in advance for approval."
   },
-
   "community_groups": {
     "ladies_group": {
       "name": "VGN Fairmont Ladies Group",
@@ -600,7 +608,6 @@
       "admin_name": "[Admin Name]"
     }
   },
-
   "faq": {
     "how_to_pay_maintenance": "Maintenance charges can be paid via bank transfer, online portal, or cheque made to VGN Fairmont Management.",
     "late_payment_charges": "1% of maintenance amount per month after the due date (1st of month).",
@@ -611,7 +618,6 @@
     "how_to_escalate_complaints": "Step 1: Contact Maintenance (3 days to resolve) | Step 2: Contact Secretary (7 days) | Step 3: Escalate to General Body Meeting",
     "can_i_sublet_my_unit": "Yes, but inform the Association within 15 days of subletting. Subtenants must follow all community rules."
   },
-
   "electricity": {
     "provider": "TANGEDCO (Tamil Nadu Generation and Distribution Corporation)",
     "billing_process": "Electricity is billed based on individual unit meter readings. Each flat has its own TANGEDCO meter. Bills are generated monthly by TANGEDCO directly.",
@@ -620,7 +626,6 @@
     "payment": "Pay directly to TANGEDCO online or at EB payment centers. Do NOT pay electricity bills through the association — your EB connection is individual.",
     "contact_for_issues": "For EB-related issues (power cut, billing disputes), contact TANGEDCO directly or raise a ticket via MyGate."
   },
-
   "piped_gas": {
     "status": "VGN Fairmont is transitioning to a fully piped gas community.",
     "provider": "IGL / City Gas Distribution company empaneled by VGN Fairmont",
@@ -634,7 +639,6 @@
     "payment": "Pay your piped gas bill online through the gas company's portal or app, or at their authorized collection centers.",
     "contact_for_issues": "For gas leaks or emergencies, immediately close the gas valve and call the gas company emergency number. For billing issues, contact the gas company helpline or raise a ticket via MyGate."
   },
-
   "water_tax": {
     "provider": "CMWSSB (Chennai Metropolitan Water Supply and Sewerage Board) — also known as Metrowater",
     "billing_process": "Water tax / water charges are levied by CMWSSB on the community as a whole (bulk connection). The association collects water charges from individual residents as part of or alongside maintenance charges.",
@@ -642,7 +646,6 @@
     "payment": "Water charges are paid to the Association as part of your monthly maintenance. The Association in turn pays the CMWSSB bulk bill on behalf of all residents.",
     "contact_for_issues": "For water supply issues or complaints, contact the FM helpdesk or raise a MyGate ticket. For CMWSSB issues, the Association coordinates with them on behalf of residents."
   },
-
   "maintenance_calculation": {
     "overview": "Monthly maintenance charges are collected by the VGN Fairmont Association from all flat owners and tenants to cover the upkeep of all common areas and services.",
     "what_is_covered": [
@@ -664,7 +667,6 @@
     "defaulters_rule": "The Association reserves the right to deny services to defaulters who fail to pay by the specified date, as per the amended bylaws.",
     "contact_for_queries": "Contact the Treasurer or Joint Treasurer for any maintenance charge queries."
   },
-
   "mygate_registration": {
     "what_is_mygate": "MyGate is the official visitor management and community app used by VGN Fairmont. It manages visitor approvals, gate passes, maintenance tickets, notices, and more.",
     "how_to_register": [
@@ -679,7 +681,6 @@
     "where_to_get_approval": "Your MyGate registration approval is granted by the Association or the Facility Management (FM) team. Contact the FM helpdesk at 93841 69203 or email helpdesk@myfairmont.in if your approval is pending for more than 24 hours.",
     "note": "Without MyGate approval, you cannot approve or deny visitor entries at the gate. Complete your registration as soon as you move in."
   },
-
   "delivery_approval": {
     "process": [
       "Step 1: When a delivery boy arrives at the main gate, he must give his name to the security guard stationed at the automatic boom barrier.",
@@ -689,7 +690,6 @@
     ],
     "parking_rules": "Delivery personnel arriving on two-wheelers must park their vehicles outside the starting entry barrier. From there, they must walk to the respective blocks to deliver the items. Two-wheelers are not permitted inside for deliveries."
   },
-
   "biometric_registration": {
     "what_it_is": "VGN Fairmont uses a biometric access control system (fingerprint and face ID scanner) at the ground floor entry of each block. This allows residents to enter their block without a physical key or access card.",
     "how_to_register": [
@@ -704,7 +704,6 @@
     "who_to_contact": "Contact the security guard at your block's ground floor OR the FM helpdesk (93841 69203) to schedule your biometric enrollment.",
     "note": "All residents (owners and tenants) must register their biometrics to gain independent access to their block. Family members who need access should also register separately."
   },
-
   "vehicle_enrollment": {
     "why_it_is_needed": "VGN Fairmont maintains a vehicle registry for all resident vehicles to ensure security, manage parking, and control gate access. All vehicles (cars and bikes) must be registered.",
     "how_to_enroll": [

@@ -8,6 +8,17 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60; // Allow function to run up to 60 seconds to prevent Vercel timeouts
 
+// Module-level KB cache — loaded once per serverless instance, not on every request
+let _kbCache: Record<string, any> | null = null;
+async function getKB(): Promise<Record<string, any>> {
+  if (_kbCache) return _kbCache;
+  const fs = await import('fs/promises');
+  const path = await import('path');
+  const kbPath = path.join(process.cwd(), 'src', 'data', 'vgn_fairmont_kb.json');
+  _kbCache = JSON.parse(await fs.readFile(kbPath, 'utf-8'));
+  return _kbCache!;
+}
+
 // Greeting pattern — used for DB-level spam deduplication
 const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|hellouu|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
 
@@ -325,7 +336,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Rate Limiting Check
-    const rateLimit = checkRateLimit(phone);
+    const rateLimit = await checkRateLimit(phone);
     if (!rateLimit.allowed) {
       console.warn(`Rate limit exceeded for phone ${phone}.`);
       await sendWhatsAppMessage(phone, "Whoa, you're typing really fast! 🏃‍♂️ Give me a few seconds to process all of that and try again in a minute.");
@@ -888,11 +899,8 @@ export async function POST(request: NextRequest) {
           }
         }
       } else if (toolName === "get_community_groups") {
-        // Load knowledge base
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        const kbPath = path.join(process.cwd(), 'src', 'data', 'vgn_fairmont_kb.json');
-        const kbData = JSON.parse(await fs.readFile(kbPath, 'utf-8'));
+        // Load knowledge base from cache (avoids disk I/O on every request)
+        const kbData = await getKB();
         const groups = kbData.community_groups || {};
         
         const groupType = args.group_type?.toLowerCase().replace(/ /g, '_');

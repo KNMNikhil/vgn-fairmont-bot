@@ -48,13 +48,45 @@ export default function Dashboard() {
   }, [messages]);
 
   useEffect(() => {
-    // Poll for new messages every 3 seconds as a robust fallback for realtime
-    const interval = setInterval(() => {
-      fetchConversations();
-      if (selectedId) fetchMessages(selectedId);
-    }, 3000);
+    // Poll for new messages every 3 seconds as a robust fallback for realtime.
+    // Polling is automatically paused when the browser tab is hidden to save resources.
+    let interval: ReturnType<typeof setInterval> | null = null;
 
-    if (!supabase) return () => clearInterval(interval);
+    function startPolling() {
+      if (interval) return; // already running
+      interval = setInterval(() => {
+        fetchConversations();
+        if (selectedId) fetchMessages(selectedId);
+      }, 3000);
+    }
+
+    function stopPolling() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        // Resume and immediately refresh when tab becomes visible
+        fetchConversations();
+        if (selectedId) fetchMessages(selectedId);
+        startPolling();
+      }
+    }
+
+    if (!document.hidden) startPolling();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    if (!supabase) {
+      return () => {
+        stopPolling();
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
+    }
 
     // Also keep Supabase Realtime for instant updates if configured correctly
     const channel = supabase
@@ -81,7 +113,8 @@ export default function Dashboard() {
       .subscribe();
 
     return () => {
-      clearInterval(interval);
+      stopPolling();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       supabase?.removeChannel(channel);
     };
   }, [selectedId, fetchConversations, fetchMessages, supabase]);

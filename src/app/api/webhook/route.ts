@@ -1028,6 +1028,14 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Webhook top-level error:", error);
     sendWhatsAppReaction(phone, whatsappMsgId, ""); // Always remove ⏳ even on crash
+    
+    // SAFETY NET: If the entire worker crashes for an unexpected reason, don't leave the user hanging silently!
+    try {
+      await sendWhatsAppMessage(phone, "Sorry, I ran into a technical issue! 🛠️ Please try sending your message again.");
+    } catch (e) {
+      console.error("Failed to send crash fallback message:", e);
+    }
+    
     // Even on top-level crash, return 200 so Meta stops retrying. We already logged it.
     return Response.json({ status: "error_handled_gracefully" }, { status: 200 });
   }

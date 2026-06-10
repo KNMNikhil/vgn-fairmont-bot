@@ -42,8 +42,11 @@ export async function GET(request: NextRequest, props: { params: Promise<{ id: s
     return new NextResponse(arrayBuffer, {
       status: 200,
       headers: {
-        "Content-Type": urlData.mime_type || "application/octet-stream",
-        "Cache-Control": "public, max-age=86400", // Cache for 1 day
+        "Content-Type": urlData.mime_type || "audio/ogg",
+        "Cache-Control": "public, max-age=86400",
+        "Accept-Ranges": "bytes",
+        "Content-Length": arrayBuffer.byteLength.toString(),
+        "Content-Disposition": "inline"
       },
     });
 

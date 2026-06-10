@@ -95,14 +95,39 @@ export async function getAIResponse(
       timeGreeting = "Good night";
     }
 
-    let dynamicSystemPrompt = COMMUNITY_SYSTEM_PROMPT;
-    if (isFirstMessageOfDay) {
-      dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):
-This is the user's first message of the day. You MUST unconditionally start your response with the exact friendly greeting: "${timeGreeting}!". Do this BEFORE answering their question or fulfilling their request.`;
-    } else {
-      dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):
-This is NOT the first message of the day. The user has already been greeted today or is in an ongoing conversation. You MUST NOT say "Good morning", "Good afternoon", "Good evening", "Hello", or "Hi" in your response. Answer their question directly without any pleasantry preamble.`;
-    }
+    // ── MULTILINGUAL VOICE NOTE INSTRUCTION ─────────────────────────────────────
+    // This is sent as the text prefix WITH the audio blob. Gemini 2.5 Flash has
+    // native audio understanding and can transcribe + respond in one pass.
+    // The instruction is detailed so it handles all real-world audio scenarios:
+    //   - Fast speech, mumbling, background noise
+    //   - Slang and colloquial phrases in any language
+    //   - Code-switching (mixing Tamil+English, Hindi+English, etc.)
+    //   - Mispronunciations and incomplete words
+    //   - Accents from different regions of Tamil Nadu and Andhra Pradesh
+    const AUDIO_TRANSCRIPTION_INSTRUCTION = `[VOICE MESSAGE — MULTILINGUAL AUDIO UNDERSTANDING]
+
+This resident sent a voice note. You are a multilingual AI fluent in Tamil, Telugu, Hindi, and English — including all regional accents, slang, dialects, and informal speech patterns from Chennai and surrounding areas.
+
+YOUR TASK:
+1. LISTEN carefully to the full audio — including any background noise, fast speech, mumbling, or partial words.
+2. UNDERSTAND the intent — even if the speaker speaks very fast, cuts words short, uses slang, mixes languages, or pronounces words incorrectly (like "lifttu" for "lift", "ticketu" for "ticket", "compaint" for "complaint", "poollu" for "pool", "maintenanu" for "maintenance").
+3. DETECT the primary language spoken:
+   - Pure Tamil (spoken by most Chennai residents) → Reply fully in Tamil script
+   - Pure Hindi (Devanagari) → Reply fully in Hindi script
+   - Pure Telugu → Reply fully in Telugu script
+   - Pure English → Reply fully in English
+   - Tanglish (Tamil words with English) → Reply in the SAME casual Tanglish style they used
+   - Hinglish (Hindi words with English) → Reply in the SAME casual Hinglish style
+   - Tenglish (Telugu words with English) → Reply in the SAME casual Tenglish style
+4. HANDLE SLANG and colloquial terms intelligently:
+   - Tamil slang: "dei", "da", "di", "macha", "pa", "bro", "anna", "akka", "thalaiva", "podu", "sollu", "seri", "illa", "enna", "epdi", "oru", "romba", "nalla" — treat these naturally
+   - Hindi slang: "yaar", "bhai", "arre", "kya baat", "suno", "boss", "acha", "theek hai", "bas", "matlab" — treat naturally
+   - Telugu slang: "ra", "da", "bro", "anna", "akka", "enti", "cheppandi", "cheyandi", "okati", "sare" — treat naturally
+   - Anglicized Indian words: "lift", "complaint", "ticket", "pool", "maintenance", "security", "plumber" spoken with Indian accent — always understand correctly
+5. NEVER ask the resident to repeat themselves or to type their question instead. You MUST understand and respond.
+6. If even after best effort the audio is completely inaudible or silent, reply with: "I couldn't catch that clearly 🎙️ — could you resend the voice note or just type it out?"
+
+Now listen to the audio and respond to the resident's request:`;
 
     const detectedLangInstruction = isAudioMessage
       ? "AUDIO: Detect language from audio and reply in that spoken language only."
@@ -118,14 +143,21 @@ Tools are ONLY for: create_ticket, check_ticket_status, get_latest_notices (live
 
 LANGUAGE RULE (CURRENT MESSAGE):
 ${isAudioMessage
-  ? "This is a VOICE MESSAGE. Detect the spoken language from the audio. Reply ENTIRELY in that spoken language. Do NOT default to Tamil or any prior conversation language."
+  ? "This is a VOICE MESSAGE. Detect the spoken language from the audio. Reply ENTIRELY in that spoken language. Match the resident's style — if they spoke Tanglish, reply in Tanglish. If Tamil, reply in Tamil. Do NOT default to any prior conversation language."
   : `Reply ENTIRELY in: ${detectedLangInstruction}`}`;
 
     // SINGLE system message — Gemini only reads the first system message reliably
+    let dynamicSystemPrompt = COMMUNITY_SYSTEM_PROMPT;
+    if (isFirstMessageOfDay) {
+      dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):\nThis is the user's first message of the day. You MUST unconditionally start your response with the exact friendly greeting: "${timeGreeting}!". Do this BEFORE answering their question or fulfilling their request.`;
+    } else {
+      dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):\nThis is NOT the first message of the day. The user has already been greeted today or is in an ongoing conversation. You MUST NOT say "Good morning", "Good afternoon", "Good evening", "Hello", or "Hi" in your response. Answer their question directly without any pleasantry preamble.`;
+    }
+
     const formattedMessages: any[] = [
       {
         role: "system",
-        content: COMMUNITY_SYSTEM_PROMPT + timeContext + toolBanRules,
+        content: dynamicSystemPrompt + timeContext + toolBanRules,
       },
       ...messages,
     ];
@@ -134,15 +166,22 @@ ${isAudioMessage
     if (formattedMessages.length > 0) {
       const lastMessage = formattedMessages[formattedMessages.length - 1];
       if (lastMessage.role === "user" && audioData) {
-        const audioTextPrefix = isAudioMessage 
-          ? "[VOICE MESSAGE - transcribe and detect language, reply in that spoken language]: "
-          : "";
         if (typeof lastMessage.content === "string") {
           lastMessage.content = [
-            { type: "text", text: audioTextPrefix + lastMessage.content },
+            // Use the rich multilingual audio instruction as the text prompt
+            { type: "text", text: isAudioMessage ? AUDIO_TRANSCRIPTION_INSTRUCTION : lastMessage.content },
             { type: "input_audio", input_audio: { data: audioData.base64, format: "wav" } }
           ];
         } else if (Array.isArray(lastMessage.content)) {
+          // Prepend audio instruction as first text part if not already present
+          if (isAudioMessage) {
+            const hasText = lastMessage.content.some((c: any) => c.type === "text");
+            if (hasText) {
+              lastMessage.content[0].text = AUDIO_TRANSCRIPTION_INSTRUCTION;
+            } else {
+              lastMessage.content.unshift({ type: "text", text: AUDIO_TRANSCRIPTION_INSTRUCTION });
+            }
+          }
           lastMessage.content.push(
             { type: "input_audio", input_audio: { data: audioData.base64, format: "wav" } }
           );

@@ -46,14 +46,10 @@ export function AnalyticsView() {
   
   if (!data) return null;
 
-  // Find peak hour
-  const maxMessages = Math.max(...data.peakHours);
-  const peakHourIndex = data.peakHours.indexOf(maxMessages);
-  const formatHour = (h: number) => {
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const hour12 = h % 12 || 12;
-    return `${hour12} ${ampm}`;
-  };
+  // Find max message count for the timeline
+  const maxTimelineMessages = data.timeline?.length > 0 
+    ? Math.max(...data.timeline.map((t: any) => t.count)) 
+    : 0;
 
   const totalInteractions = data.features.chat + data.features.tickets + data.features.orders;
   
@@ -110,26 +106,18 @@ export function AnalyticsView() {
           </div>
         </div>
 
-        {/* Deep Insights Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/5 rounded-2xl p-5 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              </div>
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Unique Users</p>
-            </div>
+        {/* Deep Insights Row 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-2">Unique Users</p>
             <p className="text-3xl font-light text-white font-mono tracking-tight">{data.insights?.uniqueUsers || 0}</p>
             <p className="text-xs text-white/40 mt-1">Active residents in this period</p>
           </div>
 
-          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/5 rounded-2xl p-5 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-400">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              </div>
-              <p className="text-xs font-semibold text-pink-400 uppercase tracking-widest">Engagement</p>
-            </div>
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-pink-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-pink-400 uppercase tracking-widest mb-2">Engagement</p>
             <div className="flex items-baseline gap-2">
               <p className="text-3xl font-light text-white font-mono tracking-tight">{data.insights?.avgMessagesPerUser || 0}</p>
               <span className="text-xs text-white/40">msgs/user</span>
@@ -137,15 +125,35 @@ export function AnalyticsView() {
             <p className="text-xs text-white/40 mt-1">Average conversation length</p>
           </div>
 
-          <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/5 rounded-2xl p-5 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              </div>
-              <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest">Busiest Day</p>
-            </div>
-            <p className="text-2xl font-light text-white tracking-tight">{data.insights?.busiestDay || "N/A"}</p>
-            <p className="text-xs text-white/40 mt-1">Accounts for {data.insights?.busiestDayPercentage || 0}% of traffic</p>
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-orange-400 uppercase tracking-widest mb-2">Busiest Day</p>
+            <p className="text-2xl font-light text-white tracking-tight leading-none mt-1">{data.insights?.busiestDay || "N/A"}</p>
+            <p className="text-xs text-white/40 mt-2">Accounts for {data.insights?.busiestDayPercentage || 0}% of traffic</p>
+          </div>
+        </div>
+
+        {/* Deep Insights Row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-violet-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-violet-400 uppercase tracking-widest mb-2">Words Processed</p>
+            <p className="text-3xl font-light text-white font-mono tracking-tight">{data.insights?.totalWords?.toLocaleString() || 0}</p>
+            <p className="text-xs text-white/40 mt-1">Estimated text volume handled</p>
+          </div>
+
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-rose-400 uppercase tracking-widest mb-2">Top Resident</p>
+            <p className="text-xl font-medium text-white tracking-tight leading-tight mt-1 truncate">{data.insights?.topResidentName || "N/A"}</p>
+            <p className="text-xs text-white/40 mt-2">Most active user overall</p>
+          </div>
+
+          <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl transition-colors" />
+            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-2">AI Response Ratio</p>
+            <p className="text-3xl font-light text-white font-mono tracking-tight">{data.insights?.botRatio || 0}%</p>
+            <p className="text-xs text-white/40 mt-1">AI messages per 100 user messages</p>
           </div>
         </div>
 
@@ -219,44 +227,54 @@ export function AnalyticsView() {
           </div>
         </div>
 
-        {/* Peak Hours Heatmap */}
+        {/* Daily Traffic Timeline */}
         <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-7 relative overflow-hidden mb-8">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-sm font-semibold text-white/90 uppercase tracking-widest">Peak Usage Hours</h3>
-            <div className="text-xs text-emerald-400 font-medium bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-              Peak: {formatHour(peakHourIndex)} ({maxMessages} msgs)
-            </div>
-          </div>
-          
-          <div className="flex items-end justify-between gap-[2px] h-32 mt-4 border-b border-white/10 pb-2 relative">
-            {maxMessages === 0 ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="text-white/30 text-sm font-medium tracking-wide">No data available for this timeframe</p>
+            <h3 className="text-sm font-semibold text-white/90 uppercase tracking-widest">Daily Traffic Timeline</h3>
+            {maxTimelineMessages > 0 && (
+              <div className="text-xs text-emerald-400 font-medium bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                Peak: {maxTimelineMessages} msgs
               </div>
-            ) : (
-              data.peakHours.map((count: number, index: number) => {
-                const height = (count / maxMessages) * 100;
-                const isPeak = index === peakHourIndex;
-                return (
-                  <div key={index} className="flex flex-col items-center flex-1 gap-2 group relative">
-                    <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded shadow-xl border border-white/10 z-10 whitespace-nowrap">
-                      {formatHour(index)}: {count} msg
-                    </div>
-                    <div 
-                      className={`w-full rounded-t-sm transition-all duration-300 ${isPeak ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.4)]' : 'bg-emerald-500/40 hover:bg-emerald-500/60'}`}
-                      style={{ height: `${Math.max(height, 4)}%` }}
-                    />
-                  </div>
-                );
-              })
             )}
           </div>
-          <div className="flex justify-between text-[10px] text-white/30 font-mono mt-2 px-1">
-            <span>12 AM</span>
-            <span>6 AM</span>
-            <span>12 PM</span>
-            <span>6 PM</span>
-            <span>11 PM</span>
+          
+          <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            <div className="flex items-end justify-start gap-2 h-32 mt-4 border-b border-white/10 pb-2 relative min-w-full" style={{ width: `${Math.max(100, data.timeline?.length * 3)}%` }}>
+              {maxTimelineMessages === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-white/30 text-sm font-medium tracking-wide">No data available for this timeframe</p>
+                </div>
+              ) : (
+                data.timeline?.map((item: { date: string, count: number }, index: number) => {
+                  const height = (item.count / maxTimelineMessages) * 100;
+                  const isPeak = item.count === maxTimelineMessages && maxTimelineMessages > 0;
+                  
+                  // Format date for tooltip (e.g., Jun 5)
+                  const d = new Date(item.date);
+                  const shortDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  
+                  return (
+                    <div key={index} className="flex flex-col items-center flex-1 min-w-[20px] max-w-[40px] gap-2 group relative">
+                      <div className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded shadow-xl border border-white/10 z-10 whitespace-nowrap">
+                        {shortDate}: {item.count} msg
+                      </div>
+                      <div 
+                        className={`w-full rounded-t-sm transition-all duration-300 ${isPeak ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.4)]' : 'bg-emerald-500/40 hover:bg-emerald-500/60'}`}
+                        style={{ height: `${Math.max(height, 4)}%` }}
+                      />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            {/* Timeline Axis Labels */}
+            {maxTimelineMessages > 0 && data.timeline?.length > 0 && (
+              <div className="flex justify-between text-[10px] text-white/30 font-mono mt-2 px-1 w-full" style={{ width: `${Math.max(100, data.timeline?.length * 3)}%` }}>
+                <span>{new Date(data.timeline[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <span>{new Date(data.timeline[Math.floor(data.timeline.length / 2)].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <span>{new Date(data.timeline[data.timeline.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+              </div>
+            )}
           </div>
         </div>
 

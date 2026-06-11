@@ -148,10 +148,65 @@ ${isAudioMessage
 
     // SINGLE system message — Gemini only reads the first system message reliably
     let dynamicSystemPrompt = COMMUNITY_SYSTEM_PROMPT;
-    if (isFirstMessageOfDay) {
-      dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):\nThis is the user's first message of the day. You MUST unconditionally start your response with the exact friendly greeting: "${timeGreeting}!". Do this BEFORE answering their question or fulfilling their request.`;
+
+    // --- Determine what greeting the USER sent (if any) ---
+    const userSaidGoodMorning   = /good\s*morning|gm|gmorning|gd\s*mrng|subah|suprabhat|shubh\s*prabhat|காலை\s*வணக்கம்/i.test(lastUserText);
+    const userSaidGoodAfternoon = /good\s*afternoon|gd\s*aftn/i.test(lastUserText);
+    const userSaidGoodEvening   = /good\s*evening|gd\s*evng|மாலை\s*வணக்கம்/i.test(lastUserText);
+    const userSaidGoodNight     = /good\s*night|gn|gd\s*ngt|இரவு\s*வணக்கம்/i.test(lastUserText);
+    const userSaidAnyTimeGreeting = userSaidGoodMorning || userSaidGoodAfternoon || userSaidGoodEvening || userSaidGoodNight;
+    const userSaidCasualGreeting  = /^(hi+|hey+|hello+|hola|yo+|namaste|vanakkam|hai|👋|🙏|😊)[\\.!\\?\\s]*$/i.test(lastUserText.trim());
+
+    // Check if user's stated greeting matches the ACTUAL current time
+    let greetingMismatch = false;
+    let mismatchCorrection = "";
+    if (userSaidGoodMorning && !(currentHour >= 4 && currentHour < 12)) {
+      greetingMismatch = true;
+      mismatchCorrection = timeGreeting; // what they SHOULD have said
+    } else if (userSaidGoodAfternoon && !(currentHour >= 12 && currentHour < 17)) {
+      greetingMismatch = true;
+      mismatchCorrection = timeGreeting;
+    } else if (userSaidGoodEvening && !(currentHour >= 17 && currentHour < 21)) {
+      greetingMismatch = true;
+      mismatchCorrection = timeGreeting;
+    } else if (userSaidGoodNight && !(currentHour >= 21 || currentHour < 4)) {
+      greetingMismatch = true;
+      mismatchCorrection = timeGreeting;
+    }
+
+    if (greetingMismatch) {
+      // User said wrong time greeting — gently correct them
+      dynamicSystemPrompt += `\n\nGREETING TIME CORRECTION (CRITICAL):
+The user said "${lastUserText.trim()}" but based on the CURRENT TIME (${timeStr} IST), it is actually "${mismatchCorrection}" time, not what they said.
+You MUST gently correct them in a friendly, warm way. For example: "Haha, it's actually ${mismatchCorrection}! 😄 But ${mismatchCorrection} to you too! How can I help you?"
+Reply in the user's language. Then proceed to answer any question they asked in the same message.`;
+    } else if (isFirstMessageOfDay) {
+      // First message of the day — always prepend the right greeting
+      if (userSaidAnyTimeGreeting) {
+        // User greeted the bot correctly — mirror their greeting + ask how to help
+        dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY — GREETING MIRROR (CRITICAL):
+The user greeted you with "${lastUserText.trim()}" and it IS the correct time for that greeting.
+You MUST reply by mirroring their exact greeting back (e.g., "${timeGreeting}!") and then warmly ask how you can assist them.
+Do NOT jump into any information immediately. Just greet back and ask how to help. Reply in the user's detected language.`;
+      } else if (userSaidCasualGreeting) {
+        // User said hi/hello — reply with the time-appropriate greeting
+        dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY — TIME GREETING (CRITICAL):
+The user greeted you casually ("${lastUserText.trim()}"). Since this is their first message of the day, you MUST reply with the CORRECT time-based greeting: "${timeGreeting}!" — then warmly ask how you can assist them.
+Reply in the user's detected language.`;
+      } else {
+        // User asked a question or request as first message of day — greet then answer
+        dynamicSystemPrompt += `\n\nFIRST MESSAGE OF DAY GREETING (CRITICAL):
+This is the user's first message of the day. You MUST start your response with "${timeGreeting}!" before answering their question. Keep it brief — just the greeting followed immediately by the answer.`;
+      }
+    } else if (userSaidAnyTimeGreeting || userSaidCasualGreeting) {
+      // Not first message of day, but user sent a standalone greeting — reply naturally and ask how to help
+      dynamicSystemPrompt += `\n\nGREETING RESPONSE RULE (CRITICAL):
+The user sent a greeting ("${lastUserText.trim()}"). You MUST acknowledge it warmly and ask how you can assist them.
+Do NOT ignore greetings even mid-conversation. Reply in their language.`;
     } else {
-      dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):\nThis is NOT the first message of the day. The user has already been greeted today or is in an ongoing conversation. You MUST NOT say "Good morning", "Good afternoon", "Good evening", "Hello", or "Hi" in your response. Answer their question directly without any pleasantry preamble.`;
+      // Mid-conversation, non-greeting message — no greeting preamble
+      dynamicSystemPrompt += `\n\nNO GREETING RULE (CRITICAL):
+This is an ongoing conversation. Do NOT start your response with "Good morning", "Good afternoon", "Hello", "Hi" or any pleasantry. Answer their question directly.`;
     }
 
     const formattedMessages: any[] = [

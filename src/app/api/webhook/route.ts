@@ -20,7 +20,8 @@ async function getKB(): Promise<Record<string, any>> {
 }
 
 // Greeting pattern — used for DB-level spam deduplication
-const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|hellouu|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|👋|🙏|😊)[\.!\?\s]*$/i;
+// Includes time-based greetings (good morning/afternoon/evening/night) as well as casual ones
+const GREETING_REGEX = /^(hi+|hey+|hello+|hola|yo+|hoo+|hyy+|heyy+|heyyy+|hiii+|heyyo|hellouu|sup|wassup|what'?s up|howdy|greetings|namaste|vanakkam|hai|ok+|hmm+|hm+|ah+|oh+|ugh|k|kk|good\s*morning|good\s*afternoon|good\s*evening|good\s*night|gm|gn|gmorning|gd\s*mrng|gd\s*evng|gd\s*ngt|subah|shubh\s*prabhat|suprabhat|காலை வணக்கம்|மாலை வணக்கம்|இரவு வணக்கம்|👋|🙏|😊|☀️|🌙|🌚|🌝)[\.!\?\s]*$/i;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -427,53 +428,43 @@ export async function POST(request: NextRequest) {
 
     // ─── DB-LEVEL GREETING SPAM DEDUPLICATION ─────────────────────────────────
     // Logic:
-    // 1. Look at the last 15 seconds of messages from this user.
-    // 2. Walk BACKWARDS from the current (latest) message.
-    // 3. Count only the UNBROKEN consecutive streak of greetings at the end.
-    //    - If a non-greeting message appears in between, the streak RESETS.
-    // 4. If the current message is part of a consecutive greeting streak of >1,
-    //    drop it. But if a non-greeting broke the chain before this, treat this
-    //    greeting as fresh (streak of 1) and let it through.
+    // Scan the LAST 50 user messages (full recent history, no time window).
+    // Walk BACKWARDS to find the unbroken consecutive greeting streak at the end.
+    //   - If a non-greeting appears in between → streak resets → current greeting is fresh → reply ✅
+    //   - If ALL recent messages at the tail are greetings (streak >= 2) → current is spam → drop ❌
     //
-    // Example: ["Hi", "Hola", "Escalation matrix", "Hey"]
-    //  - "Hi"   → streak=1 → reply ✅
-    //  - "Hola" → streak=2, all greetings → drop ❌
-    //  - "Escalation matrix" → not a greeting → reply ✅ (streak reset to 0)
-    //  - "Hey"  → streak=1 (chain was broken by "escalation matrix") → reply ✅
+    // Examples:
+    //  ["Hi", "Hola", "Heyyy"]                             → reply Hi ✅, drop Hola ❌, drop Heyyy ❌
+    //  ["Hi", "What are VGN rules?", "Good morning"]       → reply Hi ✅, reply rules ✅, reply Good morning ✅ (streak reset)
+    //  ["Good morning", "Good morning", "Good morning"]    → reply first ✅, drop the rest ❌
     if (text && !isAudio && GREETING_REGEX.test(text.trim())) {
-      const fifteenSecondsAgo = new Date(Date.now() - 15000).toISOString();
-      const { data: recentMessages } = await supabase
+      const { data: recentUserMessages } = await supabase
         .from("messages")
-        .select("whatsapp_msg_id, content, created_at")
+        .select("whatsapp_msg_id, content")
         .eq("conversation_id", conversation.id)
         .eq("role", "user")
-        .gte("created_at", fifteenSecondsAgo)
-        .order("created_at", { ascending: true }); // oldest → newest
+        .order("created_at", { ascending: false }) // newest first
+        .limit(50);
 
-      if (recentMessages && recentMessages.length > 1) {
-        // Walk backwards from the end to find the unbroken consecutive greeting streak.
-        // Stop as soon as we hit a non-greeting message.
-        let consecutiveGreetingStreak = 0;
-        for (let i = recentMessages.length - 1; i >= 0; i--) {
-          const content = (recentMessages[i].content || "").trim();
+      if (recentUserMessages && recentUserMessages.length > 1) {
+        // recentUserMessages[0] is the CURRENT message, [1] is the one before, etc.
+        // Walk from index 1 (previous message) backwards to find the unbroken greeting streak.
+        let consecutiveGreetingStreak = 1; // the current message itself counts as 1
+        for (let i = 1; i < recentUserMessages.length; i++) {
+          const content = (recentUserMessages[i].content || "").trim();
           if (GREETING_REGEX.test(content)) {
             consecutiveGreetingStreak++;
           } else {
-            // A different message broke the streak — stop counting
+            // Non-greeting broke the chain — current greeting is fresh
             break;
           }
         }
 
-        // If there are 2+ consecutive greetings at the end AND current message
-        // is not the first one in that streak, drop it.
+        // If streak > 1, the current greeting is part of a consecutive spam burst → drop it
         if (consecutiveGreetingStreak > 1) {
-          // The first message in the streak is at index: (length - consecutiveGreetingStreak)
-          const firstInStreak = recentMessages[recentMessages.length - consecutiveGreetingStreak];
-          if (firstInStreak && firstInStreak.whatsapp_msg_id !== whatsappMsgId) {
-            console.log(`DB spam dedup: dropping greeting "${text}" — consecutive streak of ${consecutiveGreetingStreak}, not the first.`);
-            sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
-            return Response.json({ status: "dropped_greeting_not_first" });
-          }
+          console.log(`DB spam dedup: dropping greeting "${text}" — unbroken streak of ${consecutiveGreetingStreak} greetings.`);
+          sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
+          return Response.json({ status: "dropped_greeting_not_first" });
         }
       }
     }

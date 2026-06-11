@@ -16,27 +16,30 @@ export async function GET() {
   // Fetch conversations to get phone numbers
   const { data: conversations, error: convError } = await supabase
     .from("conversations")
-    .select("id, phone");
+    .select("id, phone, name");
 
   if (convError) {
     return Response.json({ error: convError.message }, { status: 500 });
   }
 
   const phoneMap: Record<string, string> = {};
+  const nameMap: Record<string, string> = {};
   conversations.forEach((c) => {
     phoneMap[c.id] = c.phone;
+    nameMap[c.id] = c.name || "";
   });
 
   // Aggregate by phone
-  const statsByPhone: Record<string, { phone: string, prompt: number, completion: number, total: number }> = {};
-  
+  const statsByPhone: Record<string, { phone: string; name: string; prompt: number; completion: number; total: number }> = {};
+
   let totalPrompt = 0;
   let totalCompletion = 0;
 
   messages.forEach((msg) => {
     const phone = phoneMap[msg.conversation_id] || "Unknown";
+    const name = nameMap[msg.conversation_id] || "";
     if (!statsByPhone[phone]) {
-      statsByPhone[phone] = { phone, prompt: 0, completion: 0, total: 0 };
+      statsByPhone[phone] = { phone, name, prompt: 0, completion: 0, total: 0 };
     }
     statsByPhone[phone].prompt += msg.prompt_tokens || 0;
     statsByPhone[phone].completion += msg.completion_tokens || 0;

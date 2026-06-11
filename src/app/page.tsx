@@ -217,8 +217,8 @@ export default function Dashboard() {
     }
 
     return (
-      <div className="flex flex-col gap-2">
-        {cleanText && <p className="whitespace-pre-wrap">{cleanText}</p>}
+      <div className="flex flex-col gap-2 overflow-hidden">
+        {cleanText && <p className="whitespace-pre-wrap break-words [word-break:break-word]">{cleanText}</p>}
         {imageId && (
           <div className="rounded-lg overflow-hidden border border-white/10 mt-1 max-w-[280px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}

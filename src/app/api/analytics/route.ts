@@ -141,9 +141,13 @@ export async function GET(request: NextRequest) {
       .select("*", { count: "exact", head: true })
       .gte("created_at", pastDateString);
 
-    const { data: tickets } = await supabase.from("tickets")
-      .select("status, category")
+    const { data: tickets, error: ticketsErr } = await supabase.from("tickets")
+      .select("status, priority")
       .gte("created_at", pastDateString);
+
+    if (ticketsErr) {
+      console.error("Tickets query error:", ticketsErr);
+    }
 
     const ticketStatus = { open: 0, in_progress: 0, resolved: 0 };
     const ticketCategories = new Map<string, number>();
@@ -155,7 +159,10 @@ export async function GET(request: NextRequest) {
         else if (s === "resolved" || s === "closed") ticketStatus.resolved++;
         else ticketStatus.open++;
 
-        const cat = (t.category || "Other").trim();
+        let cat = "General Request";
+        if (t.priority === "red") cat = "Urgent / Emergency";
+        else if (t.priority === "yellow") cat = "Maintenance";
+
         ticketCategories.set(cat, (ticketCategories.get(cat) || 0) + 1);
       });
     }

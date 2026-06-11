@@ -250,7 +250,6 @@ export default function Dashboard() {
             onClick={() => setActiveTab("chat")}
             className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
           >
-            {activeTab === "chat" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
@@ -261,7 +260,6 @@ export default function Dashboard() {
             onClick={() => setActiveTab("whitelist")}
             className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "whitelist" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
           >
-            {activeTab === "whitelist" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
@@ -272,7 +270,6 @@ export default function Dashboard() {
             onClick={() => setActiveTab("stats")}
             className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "stats" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
           >
-            {activeTab === "stats" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line>
             </svg>
@@ -283,7 +280,6 @@ export default function Dashboard() {
             onClick={() => setActiveTab("analytics")}
             className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "analytics" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
           >
-            {activeTab === "analytics" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
             </svg>

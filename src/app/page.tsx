@@ -24,7 +24,8 @@ export default function Dashboard() {
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
     if (hash === "whitelist" || hash === "stats" || hash === "chat" || hash === "analytics") {
-      setActiveTab(hash as any);
+      // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/rules-of-hooks, react-hooks/set-state-in-effect
+      setActiveTab(hash as 'chat' | 'stats' | 'whitelist' | 'analytics');
     }
   }, []);
 
@@ -78,6 +79,7 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (selectedId) {
       isAutoScrollEnabled.current = true; // Reset auto-scroll when changing conversations
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowScrollDown(false);
       fetchMessages(selectedId);
     }

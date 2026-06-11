@@ -156,7 +156,7 @@ export function WhitelistView() {
                   <td className="px-6 py-4 text-right">
                     <button 
                       onClick={() => handleDelete(res.phone)}
-                      className="text-red-400/70 hover:text-red-400 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      className="text-red-400/70 hover:text-red-400 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-all"
                     >
                       Revoke Access
                     </button>

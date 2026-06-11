@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
@@ -20,9 +21,19 @@ export default function Dashboard() {
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
-    // Check if the user is near the bottom (within 100 pixels)
-    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    
+    // Check if the user has scrolled up by more than 100 pixels from the bottom
+    const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    const isNearBottom = distanceFromBottom < 100;
+    
     isAutoScrollEnabled.current = isNearBottom;
+    setShowScrollDown(!isNearBottom);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    isAutoScrollEnabled.current = true;
+    setShowScrollDown(false);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   const selected = conversations.find((c) => c.id === selectedId);
@@ -48,6 +59,7 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (selectedId) {
       isAutoScrollEnabled.current = true; // Reset auto-scroll when changing conversations
+      setShowScrollDown(false);
       fetchMessages(selectedId);
     }
   }, [selectedId, fetchMessages]);
@@ -135,6 +147,7 @@ export default function Dashboard() {
     setInput("");
     setSending(false);
     fetchMessages(selectedId);
+    scrollToBottom();
   }
 
   function formatTime(dateStr: string) {
@@ -399,8 +412,20 @@ export default function Dashboard() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Bar */}
-            <div className="px-6 py-4 border-t border-white/[0.06]" style={{ background: "#141414" }}>
+            {/* Input Bar & Floating Scroll Button */}
+            <div className="relative px-6 py-4 border-t border-white/[0.06] bg-[#0a0a0a]">
+              {showScrollDown && (
+                <button
+                  onClick={scrollToBottom}
+                  className="absolute -top-12 left-1/2 -translate-x-1/2 w-8 h-8 bg-emerald-600/90 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-black/50 backdrop-blur-md transition-all z-20"
+                  aria-label="Scroll to bottom"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
+                </button>
+              )}
               <div className="flex items-center gap-3 bg-white/[0.06] rounded-xl px-4 py-2.5 border border-white/[0.06] focus-within:border-emerald-500/40 transition-colors">
                 <input
                   type="text"

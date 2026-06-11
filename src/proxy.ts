@@ -2,48 +2,34 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(req: NextRequest) {
-  // Only apply Basic Auth in production (optional) or if ADMIN_PASSWORD is set
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  const adminUsername = process.env.ADMIN_USERNAME || 'admin'; // default to admin if they only set password
-  
-  if (!adminPassword) {
-    // If no password is set, we bypass auth (for local development before setting it up)
+  const url = req.nextUrl;
+
+  // 1. Always allow public/bot routes
+  if (
+    url.pathname.startsWith('/api/webhook') ||
+    url.pathname.startsWith('/api/cron') ||
+    url.pathname.startsWith('/api/media') ||
+    url.pathname.startsWith('/api/auth') || // Allow the login API itself
+    url.pathname.startsWith('/login')        // Allow the login page itself
+  ) {
     return NextResponse.next();
   }
 
-  const basicAuth = req.headers.get('authorization');
-
-  if (basicAuth) {
-    const authValue = basicAuth.split(' ')[1];
-    const [user, pwd] = atob(authValue).split(':');
-
-    // We accept the configured username and password
-    if (user === adminUsername && pwd === adminPassword) {
-      return NextResponse.next();
-    }
+  // 2. Check for session cookie
+  const session = req.cookies.get('admin_session');
+  
+  if (session?.value === 'authenticated') {
+    return NextResponse.next();
   }
 
-  return new NextResponse('Auth required', {
-    status: 401,
-    headers: {
-      'WWW-Authenticate': 'Basic realm="Secure Dashboard"',
-    },
-  });
+  // 3. Not authenticated — redirect to the custom login page
+  const loginUrl = new URL('/login', req.url);
+  return NextResponse.redirect(loginUrl);
 }
 
-// See "Matching Paths" below to learn more
+// Match all paths
 export const config = {
   matcher: [
-    /*
-     * Protect the root dashboard: '/'
-     * Protect the admin API endpoints: '/api/conversations/:path*', '/api/analytics', '/api/whitelist'
-     * Do NOT protect webhook: '/api/webhook'
-     * Do NOT protect cron: '/api/cron/:path*'
-     * Do NOT protect static files, Next.js internals, or public images
-     */
-    '/',
-    '/api/conversations/:path*',
-    '/api/analytics/:path*',
-    '/api/whitelist/:path*',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

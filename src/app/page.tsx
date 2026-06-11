@@ -5,9 +5,10 @@ import type { ConversationWithLastMessage, Message } from "@/lib/types";
 
 import { WhitelistView } from "@/components/WhitelistView";
 import { StatsView } from "@/components/StatsView";
+import { AnalyticsView } from "@/components/AnalyticsView";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<"chat" | "whitelist" | "stats">("chat");
+  const [activeTab, setActiveTab] = useState<"chat" | "whitelist" | "stats" | "analytics">("chat");
   const [conversations, setConversations] = useState<ConversationWithLastMessage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -22,7 +23,7 @@ export default function Dashboard() {
   // Sync activeTab with URL hash for refresh persistence
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
-    if (hash === "whitelist" || hash === "stats" || hash === "chat") {
+    if (hash === "whitelist" || hash === "stats" || hash === "chat" || hash === "analytics") {
       setActiveTab(hash as any);
     }
   }, []);
@@ -274,6 +275,12 @@ export default function Dashboard() {
             >
               Usage
             </button>
+            <button 
+              onClick={() => setActiveTab("analytics")}
+              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "analytics" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
+            >
+              Analytics
+            </button>
           </div>
         </div>
 
@@ -358,6 +365,9 @@ export default function Dashboard() {
       </div>
       <div className={activeTab === "stats" ? "flex-1 flex flex-col min-w-0" : "hidden"}>
         <StatsView />
+      </div>
+      <div className={activeTab === "analytics" ? "flex-1 flex flex-col min-w-0" : "hidden"}>
+        <AnalyticsView />
       </div>
       
       {/* Chat Panel */}

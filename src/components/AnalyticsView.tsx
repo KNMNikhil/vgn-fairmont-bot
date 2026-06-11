@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 
 export function AnalyticsView() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [faqData, setFaqData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState<number>(30);
@@ -47,7 +49,9 @@ export function AnalyticsView() {
   if (!data) return null;
 
   // Find max message count for the timeline
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const maxTimelineMessages = data.timeline?.length > 0 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ? Math.max(...data.timeline.map((t: any) => t.count)) 
     : 0;
 
@@ -286,7 +290,7 @@ export function AnalyticsView() {
             {faqData.length > 0 ? (
               faqData.map((faq, idx) => (
                 <div key={idx} className="bg-white/[0.03] border border-white/[0.05] p-4 rounded-xl">
-                  <p className="text-white/80 font-medium text-sm mb-1">{idx + 1}. "{faq.question}"</p>
+                  <p className="text-white/80 font-medium text-sm mb-1">{idx + 1}. &quot;{faq.question}&quot;</p>
                   <p className="text-white/40 text-xs">{faq.reason}</p>
                 </div>
               ))

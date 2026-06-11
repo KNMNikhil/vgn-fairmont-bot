@@ -17,13 +17,15 @@ export async function GET(request: NextRequest) {
     // 1. Peak Hours Calculation (fetch messages within the timeframe)
     const { data: messages } = await supabase
       .from("messages")
-      .select("created_at")
+      .select("created_at, conversation_id")
       .eq("role", "user")
       .gte("created_at", pastDateString)
       .order("created_at", { ascending: false })
       .limit(5000); // Increased limit to ensure we capture enough data
 
     const peakHours = new Array(24).fill(0);
+    const dayCounts = new Array(7).fill(0);
+    const uniqueUsersSet = new Set<string>();
     let totalMessages = 0;
 
     if (messages) {
@@ -33,9 +35,25 @@ export async function GET(request: NextRequest) {
         // Convert to IST manually (UTC + 5 hours 30 mins)
         utcDate.setMinutes(utcDate.getMinutes() + 330);
         const hour = utcDate.getUTCHours(); 
+        const day = utcDate.getUTCDay(); // 0 = Sunday, 1 = Monday, etc.
+        
         peakHours[hour]++;
+        dayCounts[day]++;
+        if (msg.conversation_id) {
+          uniqueUsersSet.add(msg.conversation_id);
+        }
       });
     }
+
+    // Process Insights
+    const uniqueUsers = uniqueUsersSet.size;
+    const avgMessagesPerUser = uniqueUsers > 0 ? (totalMessages / uniqueUsers).toFixed(1) : 0;
+    
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const maxDayCount = Math.max(...dayCounts);
+    const busiestDayIndex = dayCounts.indexOf(maxDayCount);
+    const busiestDay = maxDayCount > 0 ? daysOfWeek[busiestDayIndex] : "N/A";
+    const busiestDayPercentage = totalMessages > 0 ? Math.round((maxDayCount / totalMessages) * 100) : 0;
 
     // 2. Feature Usage
     const { count: ticketsCount } = await supabase.from("tickets")
@@ -68,6 +86,12 @@ export async function GET(request: NextRequest) {
 
     return Response.json({
       peakHours,
+      insights: {
+        uniqueUsers,
+        avgMessagesPerUser,
+        busiestDay,
+        busiestDayPercentage
+      },
       features: {
         chat: totalMessages,
         tickets: ticketsCount || 0,

@@ -190,49 +190,54 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0f0f0f] font-sans">
+    <div className="flex h-screen bg-[#050505] font-sans selection:bg-emerald-500/30">
       {/* Sidebar */}
-      <div className="w-[320px] flex flex-col border-r border-white/[0.06]" style={{ background: "#141414" }}>
+      <div className="w-[320px] flex flex-col border-r border-white/5 bg-[#0a0a0a] relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 left-0 w-full h-64 bg-emerald-500/5 blur-[100px] pointer-events-none" />
+
         {/* Sidebar Header */}
-        <div className="px-5 py-4 border-b border-white/[0.06]">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <div className="px-6 py-5 border-b border-white/[0.04] relative z-10">
+          <div className="flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">WhatsApp AI Agent</h1>
-              <p className="text-xs text-white/40 leading-tight mt-0.5">{conversations.length} conversation{conversations.length !== 1 ? "s" : ""}</p>
+              <h1 className="text-[15px] font-semibold text-white/90 leading-tight tracking-tight">WhatsApp AI Agent</h1>
+              <p className="text-[11px] font-medium text-emerald-500/80 uppercase tracking-widest mt-1">Admin Console</p>
             </div>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex px-2 py-2 gap-1 border-b border-white/[0.06]">
-          <button 
-            onClick={() => setActiveTab("chat")}
-            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "chat" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
-          >
-            Chats
-          </button>
-          <button 
-            onClick={() => setActiveTab("whitelist")}
-            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "whitelist" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
-          >
-            Whitelist
-          </button>
-          <button 
-            onClick={() => setActiveTab("stats")}
-            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "stats" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
-          >
-            Usage
-          </button>
+        <div className="px-4 py-3 border-b border-white/[0.04] relative z-10">
+          <div className="flex bg-white/[0.02] p-1 rounded-xl border border-white/[0.05]">
+            <button 
+              onClick={() => setActiveTab("chat")}
+              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
+            >
+              Chats
+            </button>
+            <button 
+              onClick={() => setActiveTab("whitelist")}
+              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "whitelist" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
+            >
+              Whitelist
+            </button>
+            <button 
+              onClick={() => setActiveTab("stats")}
+              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "stats" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
+            >
+              Usage
+            </button>
+          </div>
         </div>
 
         {/* Conversation List (Only show if activeTab is chat) */}
         {activeTab === "chat" && (
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {conversations.length === 0 && (
               <div className="flex flex-col items-center justify-center h-48 gap-2">
               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export function WhitelistView() {
   const [residents, setResidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newName, setNewName] = useState("");
   const [newFlat, setNewFlat] = useState("");
@@ -69,9 +70,22 @@ export function WhitelistView() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-10">
           <h2 className="text-3xl font-light text-white tracking-tight mb-2">Resident Whitelist</h2>
-          <p className="text-white/40 text-sm">Manage authorized phone numbers that can interact with the WhatsApp AI Agent.</p>
+          <p className="text-white/40 text-sm">Manage authorized phone numbers for the VGN Fairmont Bot.</p>
         </div>
         
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <h3 className="text-sm font-semibold text-white/90 uppercase tracking-widest">Authorize New Resident</h3>
+          <div className="w-full sm:w-64">
+            <input 
+              type="text" 
+              placeholder="Search by name, flat or phone..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/50"
+            />
+          </div>
+        </div>
+
         <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-7 mb-10 transition-all duration-300 hover:bg-white/[0.03]">
           <h3 className="text-sm font-semibold text-white/90 uppercase tracking-widest mb-6 flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
@@ -145,7 +159,11 @@ export function WhitelistView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
-              {residents.map((res: any) => (
+              {residents.filter(r => 
+                (r.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (r.flat_number || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                r.phone.includes(searchQuery)
+              ).map((res: any) => (
                 <tr key={res.phone} className="hover:bg-white/[0.03] transition-colors group">
                   <td className="px-6 py-4 font-mono text-white/90">{res.phone}</td>
                   <td className="px-6 py-4 text-white/80">{res.name || <span className="text-white/20 italic">Not provided</span>}</td>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export function StatsView() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     function fetchStats() {
@@ -67,11 +68,20 @@ export function StatsView() {
           </div>
         </div>
 
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <h3 className="text-sm font-semibold text-white/90 uppercase tracking-widest flex items-center gap-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             Cost Breakdown by Resident
           </h3>
+          <div className="w-full sm:w-64">
+            <input 
+              type="text" 
+              placeholder="Search by phone..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/50"
+            />
+          </div>
         </div>
 
         <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
@@ -86,7 +96,7 @@ export function StatsView() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.06]">
-              {stats.userStats?.map((user: any) => (
+              {stats.userStats?.filter((user: any) => user.phone.includes(searchQuery)).map((user: any) => (
                 <tr key={user.phone} className="hover:bg-white/[0.03] transition-colors">
                   <td className="px-6 py-4 font-mono text-white/90">{user.phone}</td>
                   <td className="px-6 py-4 font-mono text-white/50">{user.prompt?.toLocaleString()}</td>

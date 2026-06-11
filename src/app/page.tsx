@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
+  const [convoSearch, setConvoSearch] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
@@ -176,7 +177,10 @@ export default function Dashboard() {
   }
 
   function formatTime(dateStr: string) {
-    return new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const d = new Date(dateStr);
+    const date = d.toLocaleDateString([], { day: "2-digit", month: "short" });
+    const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return `${date}, ${time}`;
   }
 
   function getInitials(name: string | null, phone: string) {
@@ -275,18 +279,28 @@ export default function Dashboard() {
 
         {/* Conversation List (Only show if activeTab is chat) */}
         {activeTab === "chat" && (
-          <div className="flex-1 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-            {conversations.length === 0 && (
+          <div className="flex-1 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent flex flex-col">
+            <div className="px-4 py-3 border-b border-white/[0.04] sticky top-0 bg-[#0a0a0a] z-20">
+              <input 
+                type="text" 
+                placeholder="Search chats..." 
+                value={convoSearch}
+                onChange={e => setConvoSearch(e.target.value)}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-emerald-500/50"
+              />
+            </div>
+            
+            {conversations.filter(c => (c.name || "").toLowerCase().includes(convoSearch.toLowerCase()) || c.phone.includes(convoSearch)).length === 0 && (
               <div className="flex flex-col items-center justify-center h-48 gap-2">
               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
               </div>
-              <p className="text-xs text-white/30">No conversations yet</p>
+              <p className="text-xs text-white/30">No matching chats</p>
             </div>
           )}
-          {conversations.map((convo) => {
+          {conversations.filter(c => (c.name || "").toLowerCase().includes(convoSearch.toLowerCase()) || c.phone.includes(convoSearch)).map((convo) => {
             const isSelected = selectedId === convo.id;
             return (
               <button

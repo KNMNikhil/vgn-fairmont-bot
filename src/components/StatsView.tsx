@@ -7,12 +7,21 @@ export function StatsView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/stats")
-      .then((res) => res.json())
-      .then((data) => {
-        setStats(data);
-        setLoading(false);
-      });
+    function fetchStats() {
+      fetch(`/api/stats?t=${Date.now()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setStats(data);
+          setLoading(false);
+        });
+    }
+    
+    // Initial fetch
+    fetchStats();
+    
+    // Poll every 3 seconds
+    const interval = setInterval(fetchStats, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) return (

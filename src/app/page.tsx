@@ -18,6 +18,18 @@ export default function Dashboard() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isAutoScrollEnabled = useRef(true);
 
+  // Sync activeTab with URL hash for refresh persistence
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "whitelist" || hash === "stats" || hash === "chat") {
+      setActiveTab(hash as any);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.location.hash = activeTab;
+  }, [activeTab]);
+
   const handleScroll = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -47,7 +59,12 @@ export default function Dashboard() {
   const fetchMessages = useCallback(async (convoId: string) => {
     const res = await fetch(`/api/conversations/${convoId}/messages?t=${Date.now()}`);
     const data = await res.json();
-    setMessages(data);
+    if (Array.isArray(data)) {
+      setMessages(data);
+    } else {
+      console.error("Failed to fetch messages. Data returned:", data);
+      setMessages([]);
+    }
   }, []);
 
   useEffect(() => {

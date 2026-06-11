@@ -18,6 +18,16 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isAutoScrollEnabled = useRef(true);
+
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    // Check if the user is near the bottom (within 100 pixels)
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    isAutoScrollEnabled.current = isNearBottom;
+  }, []);
 
   const selected = conversations.find((c) => c.id === selectedId);
 
@@ -40,11 +50,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (selectedId) fetchMessages(selectedId);
+    if (selectedId) {
+      isAutoScrollEnabled.current = true; // Reset auto-scroll when changing conversations
+      fetchMessages(selectedId);
+    }
   }, [selectedId, fetchMessages]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isAutoScrollEnabled.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -348,6 +363,8 @@ export default function Dashboard() {
 
             {/* Messages */}
             <div
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
               className="flex-1 overflow-y-auto px-6 py-5 space-y-4"
               style={{
                 backgroundImage: "radial-gradient(circle at 20% 80%, rgba(16,185,129,0.03) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(16,185,129,0.02) 0%, transparent 50%)",

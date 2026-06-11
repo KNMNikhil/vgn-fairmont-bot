@@ -24,7 +24,7 @@ export function AnalyticsView() {
 
   useEffect(() => {
     function fetchAnalytics() {
-      fetch(`/api/analytics?days=${days}&t=${Date.now()}`)
+      fetch(`/api/analytics?days=${days}&t=${Date.now()}`, { cache: "no-store" })
         .then((res) => res.json())
         .then((resData) => {
           setData(resData);
@@ -32,7 +32,7 @@ export function AnalyticsView() {
         });
     }
     fetchAnalytics();
-    fetch(`/api/analytics/faq`)
+    fetch(`/api/analytics/faq`, { cache: "no-store" })
       .then(res => res.json())
       .then(resData => { if (resData.questions) setFaqData(resData.questions); });
     const interval = setInterval(fetchAnalytics, 10000);
@@ -162,10 +162,9 @@ export function AnalyticsView() {
               {data.topResidents?.length > 0 ? data.topResidents.map((r: any, i: number) => {
                 const maxMsgs = data.topResidents[0]?.messages || 1;
                 const pct = Math.round((r.messages / maxMsgs) * 100);
-                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
                 return (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="text-base w-6 shrink-0">{medals[i]}</span>
+                    <span className="text-base text-white/40 font-mono w-6 shrink-0 text-center">#{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white/80 font-medium truncate">{r.name}</p>
                       <div className="h-1.5 w-full bg-white/5 rounded-full mt-1 overflow-hidden">

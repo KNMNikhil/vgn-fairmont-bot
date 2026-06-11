@@ -13,7 +13,7 @@ export function WhitelistView() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const fetchResidents = () => {
-    fetch(`/api/residents?t=${Date.now()}`)
+    fetch(`/api/residents?t=${Date.now()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         setResidents(Array.isArray(data) ? data : []);

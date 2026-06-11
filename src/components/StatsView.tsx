@@ -10,7 +10,7 @@ export function StatsView() {
 
   useEffect(() => {
     function fetchStats() {
-      fetch(`/api/stats?t=${Date.now()}`)
+      fetch(`/api/stats?t=${Date.now()}`, { cache: "no-store" })
         .then((res) => res.json())
         .then((data) => {
           setStats(data);

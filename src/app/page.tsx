@@ -3,7 +3,11 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { ConversationWithLastMessage, Message } from "@/lib/types";
 
+import { WhitelistView } from "@/components/WhitelistView";
+import { StatsView } from "@/components/StatsView";
+
 export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<"chat" | "whitelist" | "stats">("chat");
   const [conversations, setConversations] = useState<ConversationWithLastMessage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -204,10 +208,33 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto">
-          {conversations.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-48 gap-2">
+        {/* Tab Navigation */}
+        <div className="flex px-2 py-2 gap-1 border-b border-white/[0.06]">
+          <button 
+            onClick={() => setActiveTab("chat")}
+            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "chat" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
+          >
+            Chats
+          </button>
+          <button 
+            onClick={() => setActiveTab("whitelist")}
+            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "whitelist" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
+          >
+            Whitelist
+          </button>
+          <button 
+            onClick={() => setActiveTab("stats")}
+            className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-colors ${activeTab === "stats" ? "bg-white/10 text-white" : "text-white/50 hover:bg-white/5 hover:text-white/80"}`}
+          >
+            Usage
+          </button>
+        </div>
+
+        {/* Conversation List (Only show if activeTab is chat) */}
+        {activeTab === "chat" && (
+          <div className="flex-1 overflow-y-auto">
+            {conversations.length === 0 && (
+              <div className="flex flex-col items-center justify-center h-48 gap-2">
               <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -264,11 +291,17 @@ export default function Dashboard() {
               </button>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
 
+      {/* Main Content Area */}
+      {activeTab === "whitelist" && <WhitelistView />}
+      {activeTab === "stats" && <StatsView />}
+      
       {/* Chat Panel */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {activeTab === "chat" && (
+        <div className="flex-1 flex flex-col min-w-0">
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
@@ -395,6 +428,7 @@ export default function Dashboard() {
           </>
         )}
       </div>
+      )}
     </div>
   );
 }

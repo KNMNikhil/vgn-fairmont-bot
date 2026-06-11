@@ -608,7 +608,8 @@ This is an ongoing conversation. Do NOT start your response with "Good morning",
             tool_call: {
               name: toolCallName,
               args: args
-            }
+            },
+            usage: completion.usage
           };
         }
 
@@ -631,7 +632,7 @@ This is an ongoing conversation. Do NOT start your response with "Good morning",
               const fallbackContent = fallbackCompletion.choices[0]?.message?.content?.trim();
               if (fallbackContent) {
                 console.log("Fallback text response succeeded.");
-                return { text: fallbackContent };
+                return { text: fallbackContent, usage: fallbackCompletion.usage };
               }
             } catch (fallbackErr) {
               console.error("Fallback call also failed:", fallbackErr);
@@ -646,9 +647,9 @@ This is an ongoing conversation. Do NOT start your response with "Good morning",
         const finalContent = message?.content || "";
         if (finalContent.includes("[IGNORE_SPAM]")) {
           console.log("Semantic spam detected, ignoring.");
-          return { text: "" };
+          return { text: "", usage: completion.usage };
         }
-        return { text: finalContent };
+        return { text: finalContent, usage: completion.usage };
       } catch (err: any) {
         const status = err?.status ?? 0;
         console.error(`AI Attempt ${attempt}/${MAX_RETRIES} failed (status ${status}):`, err?.message ?? err);

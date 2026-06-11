@@ -247,6 +247,21 @@ export async function POST(request: NextRequest) {
   markWhatsAppMessageRead(whatsappMsgId);
   sendWhatsAppReaction(phone, whatsappMsgId, "⏳");
 
+  // ─── RESIDENT ACCESS CHECK (WHITELIST) ──────────────────────────────────
+  const { data: residentData, error: residentError } = await supabase
+    .from("residents")
+    .select("is_approved")
+    .eq("phone", phone)
+    .single();
+
+  if (residentError || !residentData || !residentData.is_approved) {
+    console.log(`Access Denied: Unregistered or unapproved user (${phone}) tried to use the bot.`);
+    sendWhatsAppReaction(phone, whatsappMsgId, ""); // Remove ⏳
+    await sendWhatsAppMessage(phone, "Hi! This bot is exclusively for the verified residents of VGN Fairmont. If you are a resident, please contact the Association Admin to register your number.");
+    return Response.json({ status: "access_denied" }, { status: 200 }); // Return 200 so Meta doesn't retry
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   // Check for unparliamentary language
   if (text) {
     const unparliamentaryWords = ["idiot", "fool", "stupid", "dumb", "fuck", "shit", "bitch", "bastard", "asshole", "moron", "jerk", "shut up"];
@@ -1009,7 +1024,10 @@ export async function POST(request: NextRequest) {
       conversation_id: conversation.id,
       role: "assistant",
       content: fullDbContent,
-      whatsapp_msg_id: botMsgId || undefined
+      whatsapp_msg_id: botMsgId || undefined,
+      prompt_tokens: aiResponse.usage?.prompt_tokens || 0,
+      completion_tokens: aiResponse.usage?.completion_tokens || 0,
+      total_tokens: aiResponse.usage?.total_tokens || 0
     }));
 
     pendingPromises.push(supabase

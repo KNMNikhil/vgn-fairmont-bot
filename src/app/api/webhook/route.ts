@@ -37,6 +37,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // BOT STOPPED PENDING ASSOCIATION APPROVAL
+  // Uncomment the code below to re-enable the bot when approved.
+  return Response.json({ status: "stopped" });
+
   // 1. Get raw body for cryptographic signature verification
   const rawBody = await request.text();
   

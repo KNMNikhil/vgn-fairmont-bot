@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { createClient } from "@supabase/supabase-js";
 import type { ConversationWithLastMessage, Message } from "@/lib/types";
 
 export default function Dashboard() {
-  const supabase = useMemo(() => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return null;
-    return createClient(url, key);
-  }, []);
-
   const [conversations, setConversations] = useState<ConversationWithLastMessage[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -96,43 +88,11 @@ export default function Dashboard() {
     if (!document.hidden) startPolling();
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    if (!supabase) {
-      return () => {
-        stopPolling();
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-      };
-    }
-
-    // Also keep Supabase Realtime for instant updates if configured correctly
-    const channel = supabase
-      .channel("realtime-messages")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
-          const newMsg = payload.new as Message;
-          if (newMsg.conversation_id === selectedId) {
-            setMessages((prev) => {
-              if (prev.some((m) => m.id === newMsg.id)) return prev;
-              return [...prev, newMsg];
-            });
-          }
-          fetchConversations();
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        () => fetchConversations()
-      )
-      .subscribe();
-
     return () => {
       stopPolling();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      supabase?.removeChannel(channel);
     };
-  }, [selectedId, fetchConversations, fetchMessages, supabase]);
+  }, [selectedId, fetchConversations, fetchMessages]);
 
   async function toggleMode() {
     if (!selected) return;

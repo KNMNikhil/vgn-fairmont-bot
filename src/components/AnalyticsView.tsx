@@ -89,16 +89,19 @@ export function AnalyticsView() {
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl" />
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-2">Total Interactions</p>
             <p className="text-4xl font-light text-white font-mono tracking-tight">{totalInteractions}</p>
+            <p className="text-xs text-white/40 mt-1">Across all channels</p>
           </div>
           <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden">
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl" />
             <p className="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-2">Total Tickets</p>
             <p className="text-4xl font-light text-white font-mono tracking-tight">{data.features?.tickets || 0}</p>
+            <p className="text-xs text-white/40 mt-1">Open & resolved issues</p>
           </div>
           <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden">
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl" />
             <p className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-2">Total Orders</p>
             <p className="text-4xl font-light text-white font-mono tracking-tight">{data.features?.orders || 0}</p>
+            <p className="text-xs text-white/40 mt-1">Store & service purchases</p>
           </div>
           {/* Week-over-week growth */}
           <div className="bg-white/[0.02] backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 relative overflow-hidden">
@@ -234,12 +237,12 @@ export function AnalyticsView() {
                 {data.ticketCategoryBreakdown.map((c: any, i: number) => {
                   const maxCat = data.ticketCategoryBreakdown[0]?.count || 1;
                   return (
-                    <div key={i} className="flex items-center gap-2">
-                      <span className="text-xs text-white/50 truncate flex-1">{c.category}</span>
-                      <div className="w-20 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="text-xs text-white/70 font-medium w-36 truncate shrink-0">{c.category}</span>
+                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-400/70 rounded-full" style={{ width: `${Math.round((c.count / maxCat) * 100)}%` }} />
                       </div>
-                      <span className="text-xs text-white/40 font-mono w-4">{c.count}</span>
+                      <span className="text-xs text-white/40 font-mono w-6 text-right shrink-0">{c.count}</span>
                     </div>
                   );
                 })}

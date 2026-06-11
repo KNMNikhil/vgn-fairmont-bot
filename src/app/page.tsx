@@ -82,6 +82,14 @@ export default function Dashboard() {
   }, [selectedId, fetchMessages]);
 
   useEffect(() => {
+    if (activeTab === "chat" && isAutoScrollEnabled.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 50);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
     if (isAutoScrollEnabled.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
@@ -331,12 +339,15 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content Area */}
-      {activeTab === "whitelist" && <WhitelistView />}
-      {activeTab === "stats" && <StatsView />}
+      <div className={activeTab === "whitelist" ? "flex-1 flex flex-col min-w-0" : "hidden"}>
+        <WhitelistView />
+      </div>
+      <div className={activeTab === "stats" ? "flex-1 flex flex-col min-w-0" : "hidden"}>
+        <StatsView />
+      </div>
       
       {/* Chat Panel */}
-      {activeTab === "chat" && (
-        <div className="flex-1 flex flex-col min-w-0">
+      <div className={activeTab === "chat" ? "flex-1 flex flex-col min-w-0" : "hidden"}>
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4">
             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
@@ -475,7 +486,6 @@ export default function Dashboard() {
           </>
         )}
       </div>
-      )}
     </div>
   );
 }

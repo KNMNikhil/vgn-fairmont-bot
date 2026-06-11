@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   // Only apply Basic Auth in production (optional) or if ADMIN_PASSWORD is set
   const adminPassword = process.env.ADMIN_PASSWORD;
   

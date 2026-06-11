@@ -137,11 +137,14 @@ export function WhitelistView() {
             </div>
 
             {/* Button Row */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-end gap-4">
+              {successMsg && (
+                <span className="text-emerald-400 text-sm font-medium animate-pulse">{successMsg}</span>
+              )}
               <button
                 type="submit"
                 disabled={adding}
-                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {adding ? (
                   <>
@@ -149,15 +152,9 @@ export function WhitelistView() {
                     Authorizing...
                   </>
                 ) : (
-                  <>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Authorize Resident
-                  </>
+                  "Authorize Resident"
                 )}
               </button>
-              {successMsg && (
-                <span className="text-emerald-400 text-sm font-medium animate-pulse">{successMsg}</span>
-              )}
             </div>
           </form>
         </div>
@@ -195,7 +192,7 @@ export function WhitelistView() {
                   <td className="px-6 py-4">
                     <span className="bg-white/[0.06] text-white/70 px-2 py-0.5 rounded-md font-mono text-xs border border-white/[0.08]">{res.flat_number || "N/A"}</span>
                   </td>
-                  <td className="px-6 py-4 text-white/30 text-xs">{new Date(res.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                  <td className="px-6 py-4 text-white/30 text-xs">{new Date(res.created_at).toLocaleString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</td>
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => handleDelete(res.phone)}

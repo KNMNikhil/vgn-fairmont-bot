@@ -775,9 +775,20 @@ export async function POST(request: NextRequest) {
         }
       } else if (toolName === "get_local_services") {
         let query = supabase.from("services").select("*");
-        if (args.category) {
-          query = query.ilike("category", `%${args.category}%`);
+        
+        // Support both old 'category' string and new 'categories' array
+        const categoriesArray: string[] = [];
+        if (args.categories && Array.isArray(args.categories)) {
+          categoriesArray.push(...args.categories);
+        } else if (args.category) {
+          categoriesArray.push(...args.category.split(',').map((c: string) => c.trim()));
         }
+
+        if (categoriesArray.length > 0) {
+          const orFilter = categoriesArray.map(cat => `category.ilike.%${cat}%`).join(',');
+          query = query.or(orFilter);
+        }
+
         const { data, error } = await query;
         if (error || !data || data.length === 0) {
           replyText = "I couldn't find any services matching your request in the directory.";

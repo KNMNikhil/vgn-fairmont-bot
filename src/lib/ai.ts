@@ -372,13 +372,14 @@ This is an ongoing conversation. Do NOT start your response with "Good morning",
           type: "function",
           function: {
             name: "get_local_services",
-            description: "Get a list of trusted local service vendors (e.g., Plumber, Electrician).",
+            description: "Get a list of trusted local service vendors. You can request multiple services at once (e.g., Plumber AND Electrician).",
             parameters: {
               type: "object",
               properties: {
-                category: {
-                  type: "string",
-                  description: "The type of service requested (e.g., Plumber, Electrician, Carpenter). Leave empty to get all."
+                categories: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "List of the types of services requested (e.g., ['Plumber', 'Electrician', 'Carpenter']). Pass an array of all the services the user asked for. Leave empty to get all."
                 }
               }
             }

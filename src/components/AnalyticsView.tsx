@@ -6,10 +6,11 @@ export function AnalyticsView() {
   const [data, setData] = useState<any>(null);
   const [faqData, setFaqData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [days, setDays] = useState<number>(30);
 
   useEffect(() => {
     function fetchAnalytics() {
-      fetch(`/api/analytics?t=${Date.now()}`)
+      fetch(`/api/analytics?days=${days}&t=${Date.now()}`)
         .then((res) => res.json())
         .then((resData) => {
           setData(resData);
@@ -32,7 +33,7 @@ export function AnalyticsView() {
     // Poll analytics every 10 seconds
     const interval = setInterval(fetchAnalytics, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [days]);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center p-8">
@@ -64,9 +65,28 @@ export function AnalyticsView() {
   return (
     <div className="p-8 flex-1 overflow-y-auto bg-gradient-to-br from-[#0a0a0a] to-[#121212]">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-10">
-          <h2 className="text-3xl font-light text-white tracking-tight mb-2">Live Analytics</h2>
-          <p className="text-white/40 text-sm">Monitor bot usage patterns, ticket volume, and user behavior in real-time.</p>
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-light text-white tracking-tight mb-2">Live Analytics</h2>
+            <p className="text-white/40 text-sm">Monitor bot usage patterns, ticket volume, and user behavior in real-time.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-white/40 text-xs font-medium uppercase tracking-widest">Timeframe:</span>
+            <select 
+              value={days}
+              onChange={(e) => {
+                setLoading(true);
+                setDays(Number(e.target.value));
+              }}
+              className="bg-white/5 border border-white/10 text-white text-sm rounded-lg px-4 py-2 outline-none focus:border-emerald-500/50 transition-colors appearance-none cursor-pointer pr-10 relative"
+              style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px top 50%', backgroundSize: '10px auto' }}
+            >
+              <option value={7} className="bg-[#121212]">Last 7 Days</option>
+              <option value={14} className="bg-[#121212]">Last 14 Days</option>
+              <option value={21} className="bg-[#121212]">Last 21 Days</option>
+              <option value={30} className="bg-[#121212]">Last 1 Month</option>
+            </select>
+          </div>
         </div>
         
         {/* Top Stats Row */}

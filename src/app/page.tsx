@@ -234,59 +234,75 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen bg-[#050505] font-sans selection:bg-emerald-500/30">
-      {/* Sidebar */}
-      <div className="w-[320px] flex flex-col border-r border-white/5 bg-[#0a0a0a] relative overflow-hidden">
+      
+      {/* Far-Left Slim Navigation Sidebar */}
+      <div className="w-[72px] flex flex-col items-center py-6 border-r border-white/5 bg-[#080808] z-30 flex-shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </div>
+
+        <div className="flex flex-col gap-4 w-full px-3">
+          <button 
+            onClick={() => setActiveTab("chat")}
+            className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
+          >
+            {activeTab === "chat" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span className="text-[9px] font-medium uppercase tracking-wider">Chat</span>
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab("whitelist")}
+            className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "whitelist" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
+          >
+            {activeTab === "whitelist" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span className="text-[9px] font-medium uppercase tracking-wider">Access</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab("stats")}
+            className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "stats" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
+          >
+            {activeTab === "stats" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line>
+            </svg>
+            <span className="text-[9px] font-medium uppercase tracking-wider">Usage</span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab("analytics")}
+            className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition-all duration-300 relative group ${activeTab === "analytics" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:bg-white/5 hover:text-white/70"}`}
+          >
+            {activeTab === "analytics" && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-emerald-500 rounded-r-full" />}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            <span className="text-[9px] font-medium uppercase tracking-wider">Data</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Conversation Sidebar (Only visible in chat tab) */}
+      <div className={`w-[320px] flex-col border-r border-white/5 bg-[#0a0a0a] relative overflow-hidden flex-shrink-0 ${activeTab === "chat" ? "flex" : "hidden"}`}>
         {/* Subtle background glow */}
         <div className="absolute top-0 left-0 w-full h-64 bg-emerald-500/5 blur-[100px] pointer-events-none" />
 
         {/* Sidebar Header */}
         <div className="px-6 py-5 border-b border-white/[0.04] relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-[15px] font-semibold text-white/90 leading-tight tracking-tight">WhatsApp AI Agent</h1>
-              <p className="text-[11px] font-medium text-emerald-500/80 uppercase tracking-widest mt-1">Admin Console</p>
-            </div>
-          </div>
+          <h1 className="text-[15px] font-semibold text-white/90 leading-tight tracking-tight">Active Chats</h1>
+          <p className="text-[11px] font-medium text-emerald-500/80 uppercase tracking-widest mt-1">Live Feed</p>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-4 py-3 border-b border-white/[0.04] relative z-10">
-          <div className="flex bg-white/[0.02] p-1 rounded-xl border border-white/[0.05]">
-            <button 
-              onClick={() => setActiveTab("chat")}
-              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "chat" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
-            >
-              Chats
-            </button>
-            <button 
-              onClick={() => setActiveTab("whitelist")}
-              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "whitelist" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
-            >
-              Whitelist
-            </button>
-            <button 
-              onClick={() => setActiveTab("stats")}
-              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "stats" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
-            >
-              Usage
-            </button>
-            <button 
-              onClick={() => setActiveTab("analytics")}
-              className={`flex-1 text-xs py-2 rounded-lg font-medium transition-all duration-300 ${activeTab === "analytics" ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
-            >
-              Analytics
-            </button>
-          </div>
-        </div>
-
-        {/* Conversation List (Only show if activeTab is chat) */}
-        {activeTab === "chat" && (
-          <div className="flex-1 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent flex flex-col">
+        {/* Conversation List */}
+        <div className="flex-1 overflow-y-auto relative z-10 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent flex flex-col">
             <div className="px-4 py-3 border-b border-white/[0.04] sticky top-0 bg-[#0a0a0a] z-20">
               <input 
                 type="text" 
@@ -356,7 +372,6 @@ export default function Dashboard() {
             );
           })}
           </div>
-        )}
       </div>
 
       {/* Main Content Area */}

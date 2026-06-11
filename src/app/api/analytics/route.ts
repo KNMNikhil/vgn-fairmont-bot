@@ -3,15 +3,25 @@ import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    // 1. Peak Hours Calculation (fetch latest 1000 messages)
+    const searchParams = request.nextUrl.searchParams;
+    const daysParam = searchParams.get('days') || '30';
+    const days = parseInt(daysParam, 10);
+    
+    // Calculate the start date for filtering
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - days);
+    const pastDateString = pastDate.toISOString();
+
+    // 1. Peak Hours Calculation (fetch messages within the timeframe)
     const { data: messages } = await supabase
       .from("messages")
       .select("created_at")
       .eq("role", "user")
+      .gte("created_at", pastDateString)
       .order("created_at", { ascending: false })
-      .limit(1000);
+      .limit(5000); // Increased limit to ensure we capture enough data
 
     const peakHours = new Array(24).fill(0);
     let totalMessages = 0;
@@ -19,20 +29,28 @@ export async function GET(_request: NextRequest) {
     if (messages) {
       totalMessages = messages.length;
       messages.forEach(msg => {
-        const date = new Date(msg.created_at);
-        const hour = date.getHours(); // Local timezone based on the server running this, we'll convert to IST roughly
-        // We can just use UTC hours and let the frontend adjust, or adjust here.
-        // Let's use UTC and let the frontend format it or just simple local hour.
+        const utcDate = new Date(msg.created_at);
+        // Convert to IST manually (UTC + 5 hours 30 mins)
+        utcDate.setMinutes(utcDate.getMinutes() + 330);
+        const hour = utcDate.getUTCHours(); 
         peakHours[hour]++;
       });
     }
 
     // 2. Feature Usage
-    const { count: ticketsCount } = await supabase.from("tickets").select("*", { count: "exact", head: true });
-    const { count: ordersCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
+    const { count: ticketsCount } = await supabase.from("tickets")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", pastDateString);
+      
+    const { count: ordersCount } = await supabase.from("orders")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", pastDateString);
 
     // 3. Ticket Status Breakdown
-    const { data: tickets } = await supabase.from("tickets").select("status");
+    const { data: tickets } = await supabase.from("tickets")
+      .select("status")
+      .gte("created_at", pastDateString);
+      
     const ticketStatus = {
       open: 0,
       in_progress: 0,
